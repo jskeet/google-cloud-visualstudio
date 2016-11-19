@@ -224,6 +224,7 @@
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml.cs">
       <DependentUpon>LogsViewerToolWindowControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StackdriverLogsViewer\LogsViewerViewModel.cs" />
     <Compile Include="TerminalServer\TerminalServerManager.cs" />
     <Compile Include="SolutionUtils\ISolutionProject.cs" />
     <Compile Include="SolutionUtils\SolutionHelper.cs" />
@@ -336,6 +337,7 @@
   <ItemGroup>
     <VSCTCompile Include="GoogleCloudExtension.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
+      <SubType>Designer</SubType>
     </VSCTCompile>
     <Resource Include="CloudExplorer\Resources\refresh.png" />
     <Resource Include="Controls\Resources\step_1.png" />
@@ -415,6 +417,10 @@
     </Reference>
     <Reference Include="Google.Apis.Core, Version=1.19.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.Core.1.19.0\lib\net45\Google.Apis.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Logging.v2, Version=1.19.0.685, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Logging.v2.1.19.0.685\lib\net45\Google.Apis.Logging.v2.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Google.Apis.PlatformServices, Version=1.19.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">

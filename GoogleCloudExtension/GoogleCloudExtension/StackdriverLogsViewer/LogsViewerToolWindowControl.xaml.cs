@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Diagnostics.CodeAnalysis;
+using Google.Apis.Logging.v2.Data;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.ComponentModel;
+using System;
+
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -31,18 +36,72 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             this.InitializeComponent();
         }
 
-        /// <summary>
-        /// Handles click on the button by displaying a message box.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Justification = "Sample code")]
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Default event handler naming pattern")]
-        private void button1_Click(object sender, RoutedEventArgs e)
+
+        private void TextChanged(object sender, TextChangedEventArgs e)
         {
-            MessageBox.Show(
-                string.Format(System.Globalization.CultureInfo.CurrentUICulture, "Invoked '{0}'", this.ToString()),
-                "LogsViewerToolWindow");
+            TextBox t = (TextBox)sender;
+            string filter = t.Text;
+            ICollectionView cv = CollectionViewSource.GetDefaultView(dg.ItemsSource);
+            if (filter == "")
+                cv.Filter = null;
+            else
+            {
+                cv.Filter = o =>
+                {
+                    LogEntry p = o as LogEntry;
+                    switch(t.Name)
+                    {
+                        case "txtTime":
+                            return FilterTime(p, filter);
+                        case "txtMessage":
+                            return FilterText(p, filter);
+                        default:
+                            return true;
+                    }
+                };
+            }
+        }
+
+        private bool FilterText(LogEntry log, string filter)
+        {
+            if (log.TextPayload == null)
+            {
+                return false;
+            }
+
+            return log.TextPayload.ToUpper().Contains(filter);
+        }
+
+        private bool FilterTime(LogEntry log, string filter)
+        {
+            return true;
+        }
+
+        private void Expander_Expanded(object sender, RoutedEventArgs e)
+        {
+            for (var vis = sender as Visual; vis != null; vis = VisualTreeHelper.GetParent(vis) as Visual)
+                if (vis is DataGridRow)
+                {
+                    var row = (DataGridRow)vis;
+                    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                    break;
+                }
+        }
+
+        private void Expander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            for (var vis = sender as Visual; vis != null; vis = VisualTreeHelper.GetParent(vis) as Visual)
+                if (vis is DataGridRow)
+                {
+                    var row = (DataGridRow)vis;
+                    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                    break;
+                }
+        }
+
+        private void dg_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            dg.UnselectAll();
         }
     }
 }

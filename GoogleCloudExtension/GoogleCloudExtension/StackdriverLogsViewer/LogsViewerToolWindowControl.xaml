@@ -3,16 +3,252 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer"
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="1024" d:DesignWidth="640"
              Name="LogsViewerToolWindow" 
              >
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!--  The toggle button style -->
+            <ControlTemplate x:Key="SimpleExpanderButtonTemp" 
+             TargetType="{x:Type ToggleButton}">
+                <Border x:Name="ExpanderButtonBorder"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            Padding="{TemplateBinding Padding}"
+            >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Rectangle Fill="Transparent"
+                       Grid.ColumnSpan="2"/>
+                        <Ellipse Name="Circle"
+                 Grid.Column="0"
+                 Stroke="DarkGray"
+                 Width="20"
+                 Height="20"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 />
+                        <Path x:Name="Sign"
+              Grid.Column="0"
+              Data="M 0,5 H 10 M 5,0 V 10 Z"
+              Stroke="#FF666666"
+              Width="10"
+              Height="10"
+              StrokeThickness="2"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              RenderTransformOrigin="0.5,0.5"
+              >
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        <ContentPresenter x:Name="HeaderContent"
+                          Grid.Column="1"
+                          Margin="4,0,0,0"
+                          ContentSource="Content"/>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <!--Change the sign to minus when toggled-->
+                    <Trigger Property="IsChecked"
+                 Value="True">
+                        <Setter Property="Data" 
+               TargetName="Sign" Value="M 0,5 H 10 Z"/>
+                    </Trigger>
+
+                    <!-- MouseOver, Pressed behaviours-->
+                    <Trigger Property="IsMouseOver"
+                         Value="true">
+                        <Setter Property="Stroke"
+                            Value="#FF3C7FB1"
+                            TargetName="Circle"/>
+                        <Setter Property="Stroke"
+                            Value="#222"
+                            TargetName="Sign"/>
+                    </Trigger>
+                    <Trigger Property="IsPressed"
+                         Value="true">
+                        <Setter Property="Stroke"
+                            Value="#FF526C7B"
+                            TargetName="Circle"/>
+                        <Setter Property="StrokeThickness"
+                            Value="1.5"
+                            TargetName="Circle"/>
+                        <Setter Property="Stroke"
+                            Value="#FF003366"
+                            TargetName="Sign"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <ControlTemplate x:Key="SimpleExpanderTemp" TargetType="{x:Type Expander}">
+                <DockPanel>
+                    <ToggleButton x:Name="ExpanderButton"
+                      DockPanel.Dock="Top"
+                      Template="{StaticResource SimpleExpanderButtonTemp}"
+                      Content="{TemplateBinding Header}"
+                      IsChecked="{Binding Path=IsExpanded, 
+                      RelativeSource={RelativeSource TemplatedParent}}"
+                      OverridesDefaultStyle="True"
+                      Padding="1.5,0">
+                    </ToggleButton>
+                    <ContentPresenter x:Name="ExpanderContent"
+                          Visibility="Collapsed"
+                          DockPanel.Dock="Bottom"/>
+                </DockPanel>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsExpanded" Value="True">
+                        <Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+
+
+            </ControlTemplate>
+
+            <!--  The toggle button -->
+            <conv:VisbilityToBooleanConverter x:Key="VisbilityToBooleanConverter"/>
+            <DataTemplate x:Key="ExpandDetails">
+                <ToggleButton Name="ShowDetails" 
+                              IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, 
+                                                  Path=DetailsVisibility, 
+                                                  Converter={StaticResource VisbilityToBooleanConverter}, 
+                                                  Mode=OneWay}" 
+                              Margin="4" />
+            </DataTemplate>
+            
+            <!-- Cell , row style -->
+            <Style x:Key="cellStyle" TargetType="DataGridCell">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <Border  BorderThickness="0">
+                                <Border x:Name="border" >
+                                    <ContentPresenter />
+                                </Border>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="Orange"/>
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <!--
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="Black" BorderThickness="0">
+                            <Border x:Name="border"
+                              BorderBrush="White"
+                              BorderThickness="2"
+                              Background="Black"
+                              CornerRadius="5">
+                                <ContentPresenter />
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="Orange"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            -->
+            </Style>
+
+            <Style x:Key="rowStyle" TargetType="DataGridRow">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="BorderThickness" Value="0"/>
+                <!--
+            <Setter Property="Background" Value="Black" /> 
+            -->
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Margin="10" HorizontalAlignment="Center">LogsViewerToolWindow</TextBlock>
-            <Button Content="Click me!" Click="button1_Click" Width="120" Height="80" Name="button1"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" >
+            <TextBlock Text="{Binding Path=Project}" />
         </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <ComboBox Width="160" Margin="0, 0,  16, 0" >
+                <ComboBoxItem>All Resources</ComboBoxItem>
+            </ComboBox>
+            <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" />
+        </StackPanel>
+        <DataGrid Grid.Row="2" x:Name="dg" 
+                   Margin="0,0,-2,-76" IsReadOnly="True"
+                  GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
+                  CanUserResizeRows="False"
+                  RowDetailsVisibilityMode="Collapsed"
+                  RowStyle="{StaticResource rowStyle}"
+                  CellStyle="{StaticResource cellStyle}"
+                  AutoGenerateColumns="False"
+                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="Column"     
+                  ItemsSource="{Binding Path=LogEntries.LogEntryList}"
+                  >
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Expander Expanded="Expander_Expanded" Collapsed="Expander_Collapsed" 
+                                      IsExpanded="False" Template="{StaticResource SimpleExpanderTemp}" 
+                                      Margin="10, 0, 3, 0 "
+                                      >
+                            </Expander>
+
+                            <!-- <Button Click="ShowHideDetails">Details</Button> -->
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Binding="{Binding Timestamp}"
+                                Header="Timestamp">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Content, RelativeSource=
+                                         {RelativeSource Mode=TemplatedParent}}"/>
+                                <TextBox x:Name="txtTime" Width="100" TextChanged="TextChanged"  />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding TextPayload}"
+                                Header="Message">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Content, RelativeSource=
+                                         {RelativeSource Mode=TemplatedParent}}"/>
+                                <TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>
