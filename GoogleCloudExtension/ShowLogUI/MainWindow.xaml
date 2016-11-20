@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ShowLogUI"
         xmlns:logview="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer;assembly=GoogleCloudExtension"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="1024" Width="860">
     <Grid>
         <logview:LogsViewerToolWindowControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
     </Grid>

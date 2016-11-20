@@ -3,16 +3,109 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:conv="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer"
+             xmlns:viewer="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer"
+             xmlns:jlinq="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json"
+            xmlns:templateSelectors="clr-namespace:JsonViewerDemo.TemplateSelectors"
+            xmlns:valueConverters="clr-namespace:JsonViewerDemo.ValueConverters"
+            xmlns:collection="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+             
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
-             d:DesignHeight="1024" d:DesignWidth="640"
+             d:DesignHeight="1024" d:DesignWidth="640"             
              Name="LogsViewerToolWindow" 
              >
 
     <UserControl.Resources>
         <ResourceDictionary>
+
+            <valueConverters:MethodToValueConverter x:Key="MethodToValueConverter"/>
+            <valueConverters:ComplexPropertyMethodToValueConverter x:Key="ComplexPropertyMethodToValueConverter"/>
+            <valueConverters:JValueConverter x:Key="JValueConverter"/>
+            <valueConverters:JPropertyTypeToColorConverter x:Key="JPropertyTypeToColorConverter"/>
+            <valueConverters:JValueTypeToColorConverter x:Key="JValueTypeToColorConverter"/>
+            <valueConverters:JArrayLengthConverter x:Key="JArrayLengthConverter"/>
+            <HierarchicalDataTemplate x:Key="KeyValuePairJObject"  
+                                      ItemsSource="{Binding Value}">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="{Binding Path=Key}" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text=": " Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+            <DataTemplate x:Key="KeyValuePair">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="{Binding Path=Key}" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text=": " Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path=Value}"  Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                </StackPanel>
+            </DataTemplate>
+            <HierarchicalDataTemplate DataType="{x:Type jlinq:JArray}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate  x:Key="ArrayPropertyTemplate" DataType="{x:Type jlinq:JProperty}" 
+                                       ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                    <TextBlock Text=" : "/>
+                    <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate  x:Key="ObjectPropertyTemplate" DataType="{x:Type jlinq:JProperty}" ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                    <TextBlock Text=" : "/>
+                    <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+            <DataTemplate x:Key="PrimitivePropertyTemplate" DataType="{x:Type jlinq:JProperty}" >
+
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                    <TextBlock Text=" : "/>
+                    <TextBlock Text="  "/>
+                    
+                    <!-- MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" -->
+                    <TextBlock  Width="300"  
+                           TextWrapping="Wrap" Text="{Binding Path=Value, Converter={StaticResource JValueConverter}}" 
+                           Foreground="{Binding Converter={StaticResource JPropertyTypeToColorConverter}}" />
+                </StackPanel>
+            </DataTemplate>
+            <HierarchicalDataTemplate DataType="{x:Type jlinq:JObject}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+                <StackPanel Orientation="Horizontal" Margin="1">
+                    <TextBlock Text=" "/>
+                    <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate DataType="{x:Type jlinq:JConstructor}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+                <TextBlock Text="Constructor">
+                </TextBlock>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate DataType="{x:Type jlinq:JRaw}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+                <TextBlock Text="Raw">
+                </TextBlock>
+            </HierarchicalDataTemplate>
+
+            <templateSelectors:JPropertyDataTemplateSelector x:Key="JPropertyDataTemplateSelector" 
+                                             ArrayPropertyTemplate="{StaticResource ArrayPropertyTemplate}"
+                                             ObjectPropertyTemplate="{StaticResource ObjectPropertyTemplate}"
+                                             PrimitivePropertyTemplate ="{StaticResource PrimitivePropertyTemplate}"/>
+
+            <DataTemplate DataType="{x:Type jlinq:JValue}">
+                <!-- MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" -->
+                <TextBlock  Width="300" 
+                           TextWrapping="Wrap" Text="{Binding Converter={StaticResource JValueConverter}}" 
+                           Foreground="{Binding Converter={StaticResource JValueTypeToColorConverter}}" />
+            </DataTemplate>
+
+
+            <viewer:LogItemConverter x:Key="LogItemConverter"/>
+
+
+
             <!--  The toggle button style -->
             <ControlTemplate x:Key="SimpleExpanderButtonTemp" 
              TargetType="{x:Type ToggleButton}">
@@ -116,7 +209,9 @@
             </ControlTemplate>
 
             <!--  The toggle button -->
-            <conv:VisbilityToBooleanConverter x:Key="VisbilityToBooleanConverter"/>
+            <viewer:VisbilityToBooleanConverter x:Key="VisbilityToBooleanConverter"/>
+            <viewer:VisibilityToNullableBooleanConverter x:Key="VisibilityToNullableBooleanConverter"/>
+            
             <DataTemplate x:Key="ExpandDetails">
                 <ToggleButton Name="ShowDetails" 
                               IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, 
@@ -182,11 +277,12 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <Grid>
+    <Grid Background="White" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition />
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" >
             <TextBlock Text="{Binding Path=Project}" />
@@ -197,23 +293,83 @@
             </ComboBox>
             <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" />
         </StackPanel>
-        <DataGrid Grid.Row="2" x:Name="dg" 
-                   Margin="0,0,-2,-76" IsReadOnly="True"
+            <DataGrid Grid.Row="2"  x:Name="dg" 
+                   Padding="0,0, 0, 20" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
                   CanUserResizeRows="False"
-                  RowDetailsVisibilityMode="Collapsed"
+                  RowDetailsVisibilityMode="{Binding Path=ToggleExpandHideAll,Mode=OneWay}"
                   RowStyle="{StaticResource rowStyle}"
                   CellStyle="{StaticResource cellStyle}"
                   AutoGenerateColumns="False"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="Column"     
-                  ItemsSource="{Binding Path=LogEntries.LogEntryList}"
+                  ItemsSource="{Binding Path=LogEntries.LogEntryList}" 
+                  Background="White"
+                  BorderThickness="0"
+                  EnableRowVirtualization="True"   
                   >
+             <!--
+            <DataGrid.Style>
+                <Style TargetType="DataGrid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=Text}" Name="Somename" Value="Something">
+                            <Setter Property="RowDetailsVisibilityMode" Value="{Binding}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Style>
+                -->
+            
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <!-- <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=City}" FontWeight="Bold" Padding="3"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>  -->
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <!--
+                                        This appllies customized toggle button.
+                                            <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
+                                        <Expander IsExpanded="True">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal" >
+                                                    <TextBlock Text="{Binding Path=Name}" />
+                                                    <TextBlock Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
+                                                    <TextBlock Text="Element(s)"/>
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
+            
             <DataGrid.Columns>
                 <DataGridTemplateColumn>
+                    <!-- TODO:  fix the button binding ToggleExpandAllCommand problem
+                                Because the DataSource is set to LogEntryList
+                    -->
+                    <DataGridTemplateColumn.Header>
+                        <Button Content="E H" Name="btnExpandAll" Click="btnExpandAll_Click" />
+                    </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Expander Expanded="Expander_Expanded" Collapsed="Expander_Collapsed" 
-                                      IsExpanded="False" Template="{StaticResource SimpleExpanderTemp}" 
+                            <Expander 
+                                      IsExpanded="{Binding Path=DetailsVisibility,
+                                RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}},
+                                Converter={StaticResource VisibilityToNullableBooleanConverter}}"
+                                      Template="{StaticResource SimpleExpanderTemp}" 
                                       Margin="10, 0, 3, 0 "
                                       >
                             </Expander>
@@ -223,8 +379,8 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Binding="{Binding Timestamp}"
-                                Header="Timestamp">
+                <DataGridTextColumn Binding="{Binding Time}"
+                                Header="Time">
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -235,7 +391,7 @@
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
                 </DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding TextPayload}"
+                <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
@@ -249,6 +405,58 @@
                 </DataGridTextColumn>
 
             </DataGrid.Columns>
+
+                <DataGrid.RowDetailsTemplate>
+                    
+                    <DataTemplate>
+                    <!-- Is Border necessary ?  Not, leave it for now
+                    -->
+                    <Border BorderThickness="0" Background="BlanchedAlmond" Padding="0" >
+                            <!--If IsEanble is true, then Scrollbar won't move. -->
+                        <TreeView Name="ResultTreeView" BorderThickness="0" 
+                                  ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
+                                  ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}" 
+                                  IsEnabled="False"                                  
+                                  >
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}" >
+                                    <Setter Property="IsExpanded" Value="True" />
+                                </Style>
+                            </TreeView.ItemContainerStyle>  
+                            <TreeView.Resources>
+                                <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
+                                    <TreeViewItem>
+                                        <TreeViewItem.Header>
+                                            <StackPanel Orientation="Horizontal" Margin="-10,0,0,0">
+                                                <TextBlock Text="{Binding Path=Name}"/>
+                                                <TextBlock Text=" : "/>
+                                                <TextBlock Text="{Binding Path=Value}"/>
+                                            </StackPanel>
+                                        </TreeViewItem.Header>
+                                    </TreeViewItem>
+                                </HierarchicalDataTemplate>
+                                <HierarchicalDataTemplate DataType="{x:Type viewer:Payload}" ItemsSource="{Binding Path=Value}">
+                                    <TreeViewItem>
+                                        <TreeViewItem.Header>
+                                            <StackPanel Orientation="Horizontal" Margin="-10,0,0,0">
+                                                <TextBlock Text="{Binding Path=Name}"/>
+                                                <TextBlock Text=" : "/>
+                                                <TextBlock Text="{Binding Path=Value}"/>
+                                            </StackPanel>
+                                        </TreeViewItem.Header>
+                                    </TreeViewItem>
+                                </HierarchicalDataTemplate>        
+                            </TreeView.Resources>
+                        </TreeView>
+
+                    </Border>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+            
         </DataGrid>
-    </Grid>
+        <Grid Grid.Row="3" Background="LightSkyBlue">
+            <Button HorizontalAlignment="Right" Margin="0, 5, 20, 5" Name="LoadMore" Content="Load More" 
+                    Command="{Binding Path=LoadNextPageCommand}" />
+        </Grid>
+        </Grid>
 </UserControl>

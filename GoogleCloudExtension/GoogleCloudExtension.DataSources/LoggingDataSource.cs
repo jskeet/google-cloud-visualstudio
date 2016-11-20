@@ -66,7 +66,7 @@ namespace GoogleCloudExtension.DataSources
                 ResourceNames = new List<string>(new string[] { projectsFilter }),
                 Filter = requestParams.Filter,
                 PageSize = requestParams.PageSize,
-                PageToken = requestParams.PageToken
+                PageToken = requestParams.PageToken                
             };
         }
 

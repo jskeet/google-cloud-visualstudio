@@ -50,7 +50,7 @@ namespace GoogleCloudExtension.Utils
 
         #endregion
 
-        /// <summary>
+        /// <summary>   
         /// Gets/sets whether the command can be executed or not.
         /// </summary>
         public bool CanExecuteCommand

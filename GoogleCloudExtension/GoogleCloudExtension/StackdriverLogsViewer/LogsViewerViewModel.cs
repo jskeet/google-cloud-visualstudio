@@ -19,12 +19,54 @@ using GoogleCloudExtension.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System;
 
+using System.Diagnostics;
+
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
+    internal class LogItem
+    {
+        private DateTime _timestamp;
+
+        public string Date => _timestamp.ToShortDateString();
+        public string Time => _timestamp.ToLongTimeString();
+        public LogEntry LogEntry { get; }
+        public string Message => LogEntry.TextPayload;
+
+        public LogItem(LogEntry logEntry)
+        {
+            LogEntry = logEntry;
+            ConvertTimestamp(logEntry.Timestamp);
+        }
+
+
+        private void ConvertTimestamp(object timestamp)
+        {
+            if (timestamp == null)
+            {
+                Debug.Assert(false, "LogEntry Timestamp is null");
+                _timestamp = DateTime.MaxValue;
+            }
+            else if (timestamp is DateTime)
+            {
+                _timestamp = (DateTime)timestamp;
+            }
+            else
+            {
+                if (!DateTime.TryParse(timestamp.ToString(), out _timestamp))
+                {
+                    Debug.Assert(false, "Failed to parse LogEntry Timestamp");
+                    _timestamp = DateTime.MaxValue;
+                }
+            }
+        }
+
+    }
+
     [System.Windows.Markup.MarkupExtensionReturnType(typeof(IValueConverter))]
     public class VisbilityToBooleanConverter : IValueConverter
     {
@@ -43,22 +85,30 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
     }
 
-    public class LogDetailViewModel : ViewModelBase
-    {
-        public LogEntry Log { get; set; }
-    }
 
     public class LogEntriesViewModel : ViewModelBase
     {
-        private ObservableCollection<LogEntry> _logs = new ObservableCollection<LogEntry>();
-        ListCollectionView _collectionView;
+        private ObservableCollection<LogItem> _logs = new ObservableCollection<LogItem>();
 
-        public ObservableCollection<LogEntry> Logs
+        /// <summary>
+        /// Append a set of log entries.
+        /// </summary>
+        public void AddLogs(IList<LogEntry> logEntries)
         {
-            set {
-                _logs = value;
-                RaisePropertyChanged(nameof(LogEntryList));
+            foreach (var log in logEntries)
+            {
+                _logs.Add(new LogItem(log));
             }
+            RaisePropertyChanged(nameof(LogEntryList));
+        }
+
+        /// <summary>
+        /// Replace the current log entries with the new set.
+        /// </summary>
+        public void SetLogs(IList<LogEntry> logEntries)
+        {
+            _logs.Clear();
+            AddLogs(logEntries);
         }
 
         public ListCollectionView LogEntryList
@@ -66,7 +116,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             get
             {
                 ListCollectionView collectionView = new ListCollectionView(_logs);
-                collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Timestamp"));
+                collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
                 return collectionView;
             }
         }
@@ -82,9 +132,27 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     public class LogsViewerViewModel : ViewModelBase
     {
         private Lazy<LoggingDataSource> _dataSource;
+        private ProtectedCommand _loadNextPageCommand;
+        private ProtectedCommand _refreshCommand;
+        private ProtectedCommand _toggleExpandAllCommand;
+        private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
 
         public LogEntriesViewModel LogEntries { get; private set; }
-        public ICommand RefreshCommand { get; } 
+        public ICommand RefreshCommand => _refreshCommand;
+        public ICommand LoadNextPageCommand => _loadNextPageCommand;
+        public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
+        public DataGridRowDetailsVisibilityMode ToggleExpandHideAll
+        {
+            get
+            {
+                return _expandAll;
+            }
+            set
+            {
+                SetValueAndRaise(ref _expandAll, value);
+            }
+        } 
+
         public string Project
         {
             get
@@ -98,15 +166,44 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         /// </summary>
         public LogsViewerViewModel()
         {
-            RefreshCommand = new ProtectedCommand(OnRefreshCommand);
+            _toggleExpandAllCommand = new ProtectedCommand(ToggleExpandAll, canExecuteCommand:true);
+            _refreshCommand = new ProtectedCommand(OnRefreshCommand);
+            _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             LogEntries = new LogEntriesViewModel();
+            OnRefreshCommand();
         }
 
         private async void OnRefreshCommand()
         {
+            _loadNextPageCommand.CanExecuteCommand = false;
+            _refreshCommand.CanExecuteCommand = false;
             var logs = await _dataSource.Value.GetLogEntryListAsync(null);
-            LogEntries.Logs = new ObservableCollection<LogEntry>(logs);
+            LogEntries.SetLogs(logs);
+            _refreshCommand.CanExecuteCommand = true;
+            _loadNextPageCommand.CanExecuteCommand = true;
+        }
+
+        private async void LoadNextPage()
+        {
+            _loadNextPageCommand.CanExecuteCommand = false;
+            _refreshCommand.CanExecuteCommand = false;
+            var logs = await _dataSource.Value.GetNextPageLogEntryListAsync();
+            LogEntries.AddLogs(logs);
+            _refreshCommand.CanExecuteCommand = true;
+            _loadNextPageCommand.CanExecuteCommand = true;
+        }
+
+        private void ToggleExpandAll()
+        {
+            if (ToggleExpandHideAll == DataGridRowDetailsVisibilityMode.Collapsed)
+            {
+                ToggleExpandHideAll = DataGridRowDetailsVisibilityMode.Visible;
+            }
+            else
+            {
+                ToggleExpandHideAll = DataGridRowDetailsVisibilityMode.Collapsed;
+            }
         }
 
         private LoggingDataSource CreateDataSource()

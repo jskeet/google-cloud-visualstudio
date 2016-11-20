@@ -219,11 +219,19 @@
     <Compile Include="SplitTrafficManagement\SplitTrafficWindowContent.xaml.cs">
       <DependentUpon>SplitTrafficWindowContent.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\ComplexPropertyMethodToValueConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JArrayLengthConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JPropertyDataTemplateSelector.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JPropertyTypeToColorConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JValueConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JValueTypeToColorConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JasonTypeConverter\MethodToValueConverter.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindow.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowCommand.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml.cs">
       <DependentUpon>LogsViewerToolWindowControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StackdriverLogsViewer\LogDetailViewModel.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerViewModel.cs" />
     <Compile Include="TerminalServer\TerminalServerManager.cs" />
     <Compile Include="SolutionUtils\ISolutionProject.cs" />
@@ -625,6 +633,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Resource Include="StackdriverLogsViewer\LogDetailTreeView.xaml">
+      <SubType>Designer</SubType>
+    </Resource>
     <Page Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
