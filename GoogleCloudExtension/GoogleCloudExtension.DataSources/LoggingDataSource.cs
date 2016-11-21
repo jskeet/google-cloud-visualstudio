@@ -40,12 +40,11 @@ namespace GoogleCloudExtension.DataSources
         }
 
         private LogEntryRequestParams _lastSuccessfulRequestParams;
-        private LogEntryRequestParams _requestParams;
 
         /// <summary>
         /// The ListLogEntriesRequest page size.
         /// </summary>
-        public int PageSize { get; set; }
+        public int? PageSize { get; set; }
 
         /// <summary>
         /// Initializes an instance of the data source.
@@ -110,6 +109,28 @@ namespace GoogleCloudExtension.DataSources
             };
 
             return await MakeAsyncRequest(requestParams);
+        }
+
+        /// <summary>
+        /// Returns the list of MonitoredResourceDescriptor.
+        /// </summary>
+        public async Task<IList<MonitoredResourceDescriptor>> GetResourceDescriptorAsync()
+        {
+            List<MonitoredResourceDescriptor> results = new List<MonitoredResourceDescriptor>();
+            var request = Service.MonitoredResourceDescriptors.List();
+            ListMonitoredResourceDescriptorsResponse response = null;
+            do
+            {
+                request.PageToken = response?.NextPageToken;
+                response = await request.ExecuteAsync();
+                if (response?.ResourceDescriptors == null)
+                {
+                    return results;
+                }
+                results.AddRange(response?.ResourceDescriptors);
+            } while (!string.IsNullOrWhiteSpace(response?.NextPageToken));
+
+            return results;
         }
     }
 }

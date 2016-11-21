@@ -23,8 +23,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System;
+using System.Threading.Tasks;
 
 using System.Diagnostics;
+using System.Text;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -32,23 +34,68 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     {
         private DateTime _timestamp;
 
-        public string Date => _timestamp.ToShortDateString();
-        public string Time => _timestamp.ToLongTimeString();
-        public LogEntry LogEntry { get; }
-        public string Message => LogEntry.TextPayload;
-
         public LogItem(LogEntry logEntry)
         {
-            LogEntry = logEntry;
+            Entry = logEntry;
             ConvertTimestamp(logEntry.Timestamp);
         }
+
+        public string Date => _timestamp.ToShortDateString();
+        public string Time => _timestamp.ToLongTimeString();
+        public LogEntry Entry { get; private set; }
+
+        private string ComposePayloadMessage(IDictionary<string, object> dictPayload)
+        {
+            Debug.Assert(dictPayload != null);
+            if (null == dictPayload)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(";", dictPayload.Values).Replace(Environment.NewLine, " ");
+        }
+
+        public string Message
+        {
+            get
+            {
+                if (Entry?.JsonPayload != null)
+                {
+                    return ComposePayloadMessage(Entry.JsonPayload);
+                }
+
+                if (Entry?.ProtoPayload != null)
+                {
+                    return ComposePayloadMessage(Entry.ProtoPayload);
+                }
+
+                if (Entry?.TextPayload != null)
+                {
+                    return Entry.TextPayload.Replace(Environment.NewLine, " ");
+                }
+
+                if (Entry?.Labels != null)
+                {
+                    return string.Join(";", Entry?.Labels.Values).Replace(Environment.NewLine, " ");
+                }
+
+                if (Entry?.Resource?.Labels != null)
+                {
+                    return string.Join(";", Entry?.Resource.Labels).Replace(Environment.NewLine, " ");
+                }
+
+                // TODO: make sure what makes sense if there is no payload.
+                return "The log does not contain valid payload";
+            }
+        }
+
 
 
         private void ConvertTimestamp(object timestamp)
         {
             if (timestamp == null)
             {
-                Debug.Assert(false, "LogEntry Timestamp is null");
+                Debug.Assert(false, "Entry Timestamp is null");
                 _timestamp = DateTime.MaxValue;
             }
             else if (timestamp is DateTime)
@@ -59,7 +106,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 if (!DateTime.TryParse(timestamp.ToString(), out _timestamp))
                 {
-                    Debug.Assert(false, "Failed to parse LogEntry Timestamp");
+                    Debug.Assert(false, "Failed to parse Entry Timestamp");
                     _timestamp = DateTime.MaxValue;
                 }
             }
@@ -95,10 +142,16 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         /// </summary>
         public void AddLogs(IList<LogEntry> logEntries)
         {
+            if (logEntries == null)
+            {
+                return;
+            }
+
             foreach (var log in logEntries)
             {
                 _logs.Add(new LogItem(log));
             }
+
             RaisePropertyChanged(nameof(LogEntryList));
         }
 
@@ -108,6 +161,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public void SetLogs(IList<LogEntry> logEntries)
         {
             _logs.Clear();
+            if (logEntries == null)
+            {
+                RaisePropertyChanged(nameof(LogEntryList));
+                return;
+            }
+
             AddLogs(logEntries);
         }
 
@@ -121,9 +180,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
-        public LogEntriesViewModel()
-        {
-        }
     }
 
     /// <summary>
@@ -131,6 +187,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     /// </summary>
     public class LogsViewerViewModel : ViewModelBase
     {
+        private string _loadingProgress;
         private Lazy<LoggingDataSource> _dataSource;
         private ProtectedCommand _loadNextPageCommand;
         private ProtectedCommand _refreshCommand;
@@ -138,9 +195,35 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
 
         public LogEntriesViewModel LogEntries { get; private set; }
+        public LogsFilterViewModel FilterViewModel { get; private set; }
+
         public ICommand RefreshCommand => _refreshCommand;
         public ICommand LoadNextPageCommand => _loadNextPageCommand;
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
+
+        /// <summary>
+        /// Initializes the class.
+        /// </summary>
+        public LogsViewerViewModel()
+        {
+            _toggleExpandAllCommand = new ProtectedCommand(ToggleExpandAll, canExecuteCommand: true);
+            _refreshCommand = new ProtectedCommand(OnRefreshCommand, canExecuteCommand: false);
+            _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
+            _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
+            
+            LogEntries = new LogEntriesViewModel();
+            FilterViewModel = new LogsFilterViewModel();
+            FilterViewModel.FilterChanged += (sender, e) => Reload(e.Filter);
+            LoadOnStartup();
+        }
+
+        private async void LoadOnStartup()
+        {
+            FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorAsync();
+            Reload(null);
+            FilterOutResource();
+        }
+
         public DataGridRowDetailsVisibilityMode ToggleExpandHideAll
         {
             get
@@ -161,37 +244,102 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
-        /// <summary>
-        /// Initializes the class.
-        /// </summary>
-        public LogsViewerViewModel()
+        public string LogLoddingProgress
         {
-            _toggleExpandAllCommand = new ProtectedCommand(ToggleExpandAll, canExecuteCommand:true);
-            _refreshCommand = new ProtectedCommand(OnRefreshCommand);
-            _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
-            _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
-            LogEntries = new LogEntriesViewModel();
-            OnRefreshCommand();
+            get
+            {
+                return _loadingProgress;
+            }
+
+            private set
+            {
+                SetValueAndRaise(ref _loadingProgress, value);
+            }
         }
 
-        private async void OnRefreshCommand()
+        private async Task<bool> ShouldKeepResourceType(MonitoredResourceDescriptor resourceDescriptor)
+        {
+            if (resourceDescriptor == null)
+            {
+                Debug.Assert(false);
+                return false;
+            }
+
+            string filter = $"resource.type=\"{resourceDescriptor.Type}\"";
+            try
+            {
+                _dataSource.Value.PageSize = 1;
+                var result =  await _dataSource.Value.GetLogEntryListAsync(filter);
+                return result != null && result.Count > 0;
+            }
+            catch
+            {
+                // If exception happens. Keep the type.
+                return true;
+            }
+            finally
+            {
+                _dataSource.Value.PageSize = null;
+            }
+        }
+
+        private async void FilterOutResource()
+        {
+            List<MonitoredResourceDescriptor> resources = new List<MonitoredResourceDescriptor>();
+            foreach (var resourceType in FilterViewModel.ResourceDescriptors)
+            {
+                if (await ShouldKeepResourceType(resourceType))
+                {
+                    resources.Add(resourceType);
+                }
+            }
+
+            FilterViewModel.ResourceDescriptors = resources;
+        }
+
+        private async Task LogLoaddingWrapper(Func<Task> callback)
         {
             _loadNextPageCommand.CanExecuteCommand = false;
             _refreshCommand.CanExecuteCommand = false;
-            var logs = await _dataSource.Value.GetLogEntryListAsync(null);
-            LogEntries.SetLogs(logs);
+            // TODO: using ... animation or adding it to Resources.
+            LogLoddingProgress = "Loading ... ";
+
+            try
+            {
+                await callback();
+                LogLoddingProgress = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                LogLoddingProgress = ex.ToString();
+            }
+
             _refreshCommand.CanExecuteCommand = true;
             _loadNextPageCommand.CanExecuteCommand = true;
+        }
+
+        private async void Reload(string filter)
+        {
+            await LogLoaddingWrapper(async () => {
+                var logs = await _dataSource.Value.GetLogEntryListAsync(filter);
+                LogEntries.SetLogs(logs);
+                FilterViewModel.UpdateFilterWithLogEntries(logs);
+            });
+        }
+
+        private void OnRefreshCommand()
+        {
+            Reload(null);
         }
 
         private async void LoadNextPage()
         {
-            _loadNextPageCommand.CanExecuteCommand = false;
-            _refreshCommand.CanExecuteCommand = false;
-            var logs = await _dataSource.Value.GetNextPageLogEntryListAsync();
-            LogEntries.AddLogs(logs);
-            _refreshCommand.CanExecuteCommand = true;
-            _loadNextPageCommand.CanExecuteCommand = true;
+            await LogLoaddingWrapper(async () =>
+            {
+                var logs = await _dataSource.Value.GetNextPageLogEntryListAsync();
+                LogEntries.AddLogs(logs);
+                FilterViewModel.UpdateFilterWithLogEntries(logs);
+            });
         }
 
         private void ToggleExpandAll()

@@ -98,10 +98,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
 
             LogItem log = value as LogItem;
-            var objNode = new ObjectNode(log.LogEntry);
-            AddPayload(objNode.Children, nameof(log.LogEntry.JsonPayload), log.LogEntry.JsonPayload);
-            AddPayload(objNode.Children, nameof(log.LogEntry.Labels), log.LogEntry.Labels);
-            AddPayload(objNode.Children, nameof(log.LogEntry.ProtoPayload), log.LogEntry.ProtoPayload);
+            var objNode = new ObjectNode(log.Entry);
+            AddPayload(objNode.Children, nameof(log.Entry.JsonPayload), log.Entry.JsonPayload);
+            AddPayload(objNode.Children, nameof(log.Entry.Labels), log.Entry.Labels);
+            AddPayload(objNode.Children, nameof(log.Entry.ProtoPayload), log.Entry.ProtoPayload);
             return objNode.Children;
         }
 

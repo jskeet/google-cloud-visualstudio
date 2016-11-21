@@ -1816,6 +1816,24 @@ namespace GoogleCloudExtension
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Resources.
+        /// </summary>
+        public static string LogViewerAllResources {
+            get {
+                return ResourceManager.GetString("LogViewerAllResources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter by resource type.
+        /// </summary>
+        public static string LogViewerResourcesComboBoxTip {
+            get {
+                return ResourceManager.GetString("LogViewerResourcesComboBoxTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Google Cloud Stackdriver Logs Viewer ({0}).
         /// </summary>
         public static string LogViewerToolWindowCaption {

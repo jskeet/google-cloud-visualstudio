@@ -267,6 +267,7 @@
             </Style>
 
             <Style x:Key="rowStyle" TargetType="DataGridRow">
+                <Setter Property="TextBlock.TextWrapping" Value="NoWrap" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="BorderThickness" Value="0"/>
@@ -287,13 +288,29 @@
         <StackPanel Orientation="Horizontal" >
             <TextBlock Text="{Binding Path=Project}" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <ComboBox Width="160" Margin="0, 0,  16, 0" >
-                <ComboBoxItem>All Resources</ComboBoxItem>
-            </ComboBox>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
+            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}" >
+                <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
+                          ToolTip="{Binding Path=ResourcesComboBoxTip}"
+                          ItemsSource="{Binding Path=ResourcesSelection}"
+                          SelectedItem="{Binding Path=SelectedResource}"
+                          DisplayMemberPath="DisplayName"
+                          />
+
+                <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
+                          ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
+                          SelectedItem="{Binding Path=SelectedLogID}"
+                          
+                          />
+                <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
+                          ItemsSource="{Binding Path=LogSeverityList}"
+                          SelectedItem="{Binding Path=SelectedLogSeverity}"
+                          />
+            </StackPanel>
             <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" />
         </StackPanel>
-            <DataGrid Grid.Row="2"  x:Name="dg" 
+        <DataGrid Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 20" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
                   CanUserResizeRows="False"
@@ -306,6 +323,7 @@
                   Background="White"
                   BorderThickness="0"
                   EnableRowVirtualization="True"   
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   >
              <!--
             <DataGrid.Style>
@@ -455,6 +473,7 @@
             
         </DataGrid>
         <Grid Grid.Row="3" Background="LightSkyBlue">
+            <TextBlock Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Center" />
             <Button HorizontalAlignment="Right" Margin="0, 5, 20, 5" Name="LoadMore" Content="Load More" 
                     Command="{Binding Path=LoadNextPageCommand}" />
         </Grid>

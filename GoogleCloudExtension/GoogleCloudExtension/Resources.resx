@@ -1299,4 +1299,12 @@
     <value>Google Cloud Stackdriver Logs Viewer ({0})</value>
     <comment>The Logs Viewer Tool Window caption followed by the current account user name.</comment>
   </data>
+  <data name="LogViewerAllResources" xml:space="preserve">
+    <value>All Resources</value>
+    <comment>Logs Viewer Resources ComboBox All Resource selection item text</comment>
+  </data>
+  <data name="LogViewerResourcesComboBoxTip" xml:space="preserve">
+    <value>Filter by resource type</value>
+    <comment>Logs Viewer Resources ComboBox  tip.</comment>
+  </data>
 </root>
