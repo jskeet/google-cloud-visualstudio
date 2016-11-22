@@ -30,14 +30,25 @@ using System.Text;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
+    internal enum LogSeverity
+    {
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR,
+        CRITICAL,
+    }
+
     internal class LogItem
     {
         private DateTime _timestamp;
+        private string _message;
 
         public LogItem(LogEntry logEntry)
         {
             Entry = logEntry;
             ConvertTimestamp(logEntry.Timestamp);
+            _message = ComposeMessage();
         }
 
         public string Date => _timestamp.ToShortDateString();
@@ -55,41 +66,80 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             return string.Join(";", dictPayload.Values).Replace(Environment.NewLine, " ");
         }
 
+        private string ComposeMessage()
+        {
+            if (Entry?.JsonPayload != null)
+            {
+                return ComposePayloadMessage(Entry.JsonPayload);
+            }
+
+            if (Entry?.ProtoPayload != null)
+            {
+                return ComposePayloadMessage(Entry.ProtoPayload);
+            }
+
+            if (Entry?.TextPayload != null)
+            {
+                return Entry.TextPayload.Replace(Environment.NewLine, " ");
+            }
+
+            if (Entry?.Labels != null)
+            {
+                return string.Join(";", Entry?.Labels.Values).Replace(Environment.NewLine, " ");
+            }
+
+            if (Entry?.Resource?.Labels != null)
+            {
+                return string.Join(";", Entry?.Resource.Labels).Replace(Environment.NewLine, " ");
+            }
+
+            return string.Empty;
+        }
+
         public string Message
         {
             get
             {
-                if (Entry?.JsonPayload != null)
+                if (string.IsNullOrWhiteSpace(_message))
                 {
-                    return ComposePayloadMessage(Entry.JsonPayload);
+                    // TODO: make sure what makes sense if there is no payload.
+                    return "The log does not contain valid payload";
                 }
-
-                if (Entry?.ProtoPayload != null)
+                else
                 {
-                    return ComposePayloadMessage(Entry.ProtoPayload);
+                    return _message;
                 }
-
-                if (Entry?.TextPayload != null)
-                {
-                    return Entry.TextPayload.Replace(Environment.NewLine, " ");
-                }
-
-                if (Entry?.Labels != null)
-                {
-                    return string.Join(";", Entry?.Labels.Values).Replace(Environment.NewLine, " ");
-                }
-
-                if (Entry?.Resource?.Labels != null)
-                {
-                    return string.Join(";", Entry?.Resource.Labels).Replace(Environment.NewLine, " ");
-                }
-
-                // TODO: make sure what makes sense if there is no payload.
-                return "The log does not contain valid payload";
             }
         }
 
+        public string SeverityLevel
+        {
+            get
+            {
+                LogSeverity logLevel;
+                if (string.IsNullOrWhiteSpace(Entry?.Severity) || 
+                    !Enum.TryParse<LogSeverity>(Entry?.Severity, out logLevel))
+                {
+                    return string.Empty;
+                }
 
+                switch (logLevel)
+                {
+                    case LogSeverity.CRITICAL:
+                        return "C";
+                    case LogSeverity.DEBUG:
+                        return "D";
+                    case LogSeverity.ERROR:
+                        return "E";
+                    case LogSeverity.INFO:
+                        return "I";
+                    case LogSeverity.WARNING:
+                        return "W";
+                }
+
+                return string.Empty;
+            }
+        }
 
         private void ConvertTimestamp(object timestamp)
         {
@@ -136,6 +186,13 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     public class LogEntriesViewModel : ViewModelBase
     {
         private ObservableCollection<LogItem> _logs = new ObservableCollection<LogItem>();
+        ListCollectionView _collectionView;
+        private Object _collectionViewLock = new Object();
+
+
+        public LogEntriesViewModel()
+        {
+        }
 
         /// <summary>
         /// Append a set of log entries.
@@ -150,6 +207,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             foreach (var log in logEntries)
             {
                 _logs.Add(new LogItem(log));
+                // _collectionView.AddNewItem(new LogItem(log));
             }
 
             RaisePropertyChanged(nameof(LogEntryList));
@@ -161,6 +219,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public void SetLogs(IList<LogEntry> logEntries)
         {
             _logs.Clear();
+            _collectionView = new ListCollectionView(new List<LogItem>());
             if (logEntries == null)
             {
                 RaisePropertyChanged(nameof(LogEntryList));
@@ -174,12 +233,32 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                ListCollectionView collectionView = new ListCollectionView(_logs);
-                collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
-                return collectionView;
+                lock (_collectionViewLock)
+                {
+                    _collectionView = new ListCollectionView(_logs);
+                    _collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
+                    return _collectionView;
+                }
             }
         }
 
+        public string MessageFilter
+        {
+            get
+            {
+                Debug.Assert(false, "Does not expect a get");
+                return "";
+            }
+
+            set
+            {
+                Debug.WriteLine($"MessageFilter is called {value}");
+                lock (_collectionViewLock)
+                {
+                    _collectionView.Filter = new Predicate<object>(item => ((LogItem)item).Message.Contains(value));
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -194,7 +273,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private ProtectedCommand _toggleExpandAllCommand;
         private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
 
-        public LogEntriesViewModel LogEntries { get; private set; }
+        public LogEntriesViewModel LogEntriesViewModel { get; private set; }
         public LogsFilterViewModel FilterViewModel { get; private set; }
 
         public ICommand RefreshCommand => _refreshCommand;
@@ -211,7 +290,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             
-            LogEntries = new LogEntriesViewModel();
+            LogEntriesViewModel = new LogEntriesViewModel();
             FilterViewModel = new LogsFilterViewModel();
             FilterViewModel.FilterChanged += (sender, e) => Reload(e.Filter);
             LoadOnStartup();
@@ -256,6 +335,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 SetValueAndRaise(ref _loadingProgress, value);
             }
         }
+
 
         private async Task<bool> ShouldKeepResourceType(MonitoredResourceDescriptor resourceDescriptor)
         {
@@ -322,7 +402,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             await LogLoaddingWrapper(async () => {
                 var logs = await _dataSource.Value.GetLogEntryListAsync(filter);
-                LogEntries.SetLogs(logs);
+                LogEntriesViewModel.SetLogs(logs);
                 FilterViewModel.UpdateFilterWithLogEntries(logs);
             });
         }
@@ -337,7 +417,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             await LogLoaddingWrapper(async () =>
             {
                 var logs = await _dataSource.Value.GetNextPageLogEntryListAsync();
-                LogEntries.AddLogs(logs);
+                LogEntriesViewModel.AddLogs(logs);
                 FilterViewModel.UpdateFilterWithLogEntries(logs);
             });
         }

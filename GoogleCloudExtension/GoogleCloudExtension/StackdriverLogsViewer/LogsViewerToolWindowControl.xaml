@@ -67,7 +67,7 @@
                     <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
                     <TextBlock Text=" : "/>
                     <TextBlock Text="  "/>
-                    
+
                     <!-- MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" -->
                     <TextBlock  Width="300"  
                            TextWrapping="Wrap" Text="{Binding Path=Value, Converter={StaticResource JValueConverter}}" 
@@ -211,7 +211,7 @@
             <!--  The toggle button -->
             <viewer:VisbilityToBooleanConverter x:Key="VisbilityToBooleanConverter"/>
             <viewer:VisibilityToNullableBooleanConverter x:Key="VisibilityToNullableBooleanConverter"/>
-            
+
             <DataTemplate x:Key="ExpandDetails">
                 <ToggleButton Name="ShowDetails" 
                               IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, 
@@ -220,7 +220,7 @@
                                                   Mode=OneWay}" 
                               Margin="4" />
             </DataTemplate>
-            
+
             <!-- Cell , row style -->
             <Style x:Key="cellStyle" TargetType="DataGridCell">
                 <Setter Property="Template">
@@ -277,7 +277,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    
+
     <Grid Background="White" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -307,8 +307,43 @@
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           />
+                <StackPanel Margin="0, 0,  16, 0" >
+                    <Button Content="{Binding Path=DateTimeRange}" Command="{Binding Path=DateTimeRangeCommand}" >
+                    </Button>
+                    <Popup IsOpen="{Binding Path=IsPopupOpen}" StaysOpen="False" 
+                           Placement="Bottom" PopupAnimation="Slide" >
+                        <StackPanel Background="LightYellow">
+                        <Grid  Height="Auto" Width="Auto" DataContext="{Binding Path=DateTimeRangePicker}" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="5, 5, 0, 10" >
+                                <TextBlock Text ="Start" Margin="0, 0, 6, 0"/>
+                                <TextBlock Text="{Binding Path=StartDateTime}" Margin="0, 0, 3, 0" />
+                                <TextBlock Text ="End"  Margin="0, 0, 6, 0"/>
+                                <TextBlock Text="{Binding Path=EndtDateTime}" Margin="0, 0, 3, 0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1"  Margin="5, 5, 0, 10">
+                                <Button  Content="5 Day" Command="{Binding Path=FiveDayRangeCommand}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="2"  Margin="5, 5, 0, 10" >
+                                <TextBlock Text ="Start" Margin="0, 0, 6, 0"/>
+                                <DatePicker  Margin="0, 0, 6, 0" SelectedDate="{Binding Path=StartDateTime, Mode=TwoWay}" 
+                                             SelectedDateFormat="Short" />
+
+                                <TextBlock Text ="End"  Margin="0, 0, 6, 0"/>
+                                <DatePicker Margin="0, 0, 6, 0" SelectedDate="{Binding Path=EndtDateTime, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Grid>
+                        <Button  HorizontalAlignment="Right" Content="Set Range" Margin="5, 5, 0, 10" Command="{Binding SetRangeCommand}" />
+                        </StackPanel>
+                    </Popup>
+                </StackPanel>
+                <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" Margin="0, 0,  16, 0"  />
             </StackPanel>
-            <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" />
         </StackPanel>
         <DataGrid Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 20" IsReadOnly="True"
@@ -319,13 +354,14 @@
                   CellStyle="{StaticResource cellStyle}"
                   AutoGenerateColumns="False"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="Column"     
-                  ItemsSource="{Binding Path=LogEntries.LogEntryList}" 
+                  DataContext="{Binding Path=LogEntriesViewModel}"
+                  ItemsSource="{Binding Path=LogEntryList}" 
                   Background="White"
                   BorderThickness="0"
                   EnableRowVirtualization="True"   
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="37,0,-37,0"
                   >
-             <!--
+            <!--
             <DataGrid.Style>
                 <Style TargetType="DataGrid">
                     <Style.Triggers>
@@ -336,7 +372,7 @@
                 </Style>
             </DataGrid.Style>
                 -->
-            
+
             <DataGrid.GroupStyle>
                 <GroupStyle>
                     <!-- <GroupStyle.HeaderTemplate>
@@ -372,7 +408,7 @@
                     </GroupStyle.ContainerStyle>
                 </GroupStyle>
             </DataGrid.GroupStyle>
-            
+
             <DataGrid.Columns>
                 <DataGridTemplateColumn>
                     <!-- TODO:  fix the button binding ToggleExpandAllCommand problem
@@ -397,9 +433,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+                <DataGridTextColumn Binding="{Binding SeverityLevel}"  />
+
+
                 <DataGridTextColumn Binding="{Binding Time}"
                                 Header="Time">
-                    <DataGridTextColumn.HeaderTemplate>
+                    <!--DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Content, RelativeSource=
@@ -407,7 +446,7 @@
                                 <TextBox x:Name="txtTime" Width="100" TextChanged="TextChanged"  />
                             </StackPanel>
                         </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
+                    </ -->
                 </DataGridTextColumn>
                 <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
@@ -416,7 +455,11 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Content, RelativeSource=
                                          {RelativeSource Mode=TemplatedParent}}"/>
-                                <TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  />
+                                <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
+                                <TextBox x:Name="txtMessage" Width="150" 
+                                         Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
+                                                Mode=OneWayToSource,
+                                               RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  />
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
@@ -424,13 +467,13 @@
 
             </DataGrid.Columns>
 
-                <DataGrid.RowDetailsTemplate>
-                    
-                    <DataTemplate>
+            <DataGrid.RowDetailsTemplate>
+
+                <DataTemplate>
                     <!-- Is Border necessary ?  Not, leave it for now
                     -->
                     <Border BorderThickness="0" Background="BlanchedAlmond" Padding="0" >
-                            <!--If IsEanble is true, then Scrollbar won't move. -->
+                        <!--If IsEanble is true, then Scrollbar won't move. -->
                         <TreeView Name="ResultTreeView" BorderThickness="0" 
                                   ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
                                   ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}" 
@@ -440,7 +483,7 @@
                                 <Style TargetType="{x:Type TreeViewItem}" >
                                     <Setter Property="IsExpanded" Value="True" />
                                 </Style>
-                            </TreeView.ItemContainerStyle>  
+                            </TreeView.ItemContainerStyle>
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
                                     <TreeViewItem>
@@ -463,19 +506,19 @@
                                             </StackPanel>
                                         </TreeViewItem.Header>
                                     </TreeViewItem>
-                                </HierarchicalDataTemplate>        
+                                </HierarchicalDataTemplate>
                             </TreeView.Resources>
                         </TreeView>
 
                     </Border>
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
-            
+
         </DataGrid>
         <Grid Grid.Row="3" Background="LightSkyBlue">
             <TextBlock Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Center" />
             <Button HorizontalAlignment="Right" Margin="0, 5, 20, 5" Name="LoadMore" Content="Load More" 
                     Command="{Binding Path=LoadNextPageCommand}" />
         </Grid>
-        </Grid>
+    </Grid>
 </UserControl>
