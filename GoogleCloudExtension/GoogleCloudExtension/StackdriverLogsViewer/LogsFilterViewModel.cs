@@ -79,9 +79,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 RaisePropertyChanged(nameof(EndtDateTime));
             }
         }
-
-
-
     }
 
 
@@ -105,6 +102,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 IsPopupOpen = !IsPopupOpen;
             });
             _setRangeCommand = new ProtectedCommand(SetDateTimeRange);
+            _startDateTime = DateTimeRangePicker.Start;
+            _endDateTime = DateTimeRangePicker.End;
         }
 
         #region Filter change 
@@ -336,8 +335,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private bool _isPopupOpen = false;
         public ICommand DateTimeRangeCommand => _dateTimeRangeCommand;
         public ICommand SetRangeCommand => _setRangeCommand;
-        private DateTime _startDateTime = DateTime.MinValue;
-        private DateTime _endDateTime = DateTime.MinValue;
+        private DateTime _startDateTime;
+        private DateTime _endDateTime;
 
         void SetDateTimeRange()
         {

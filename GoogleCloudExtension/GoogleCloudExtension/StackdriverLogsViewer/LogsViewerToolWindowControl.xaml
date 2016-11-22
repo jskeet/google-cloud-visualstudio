@@ -25,6 +25,7 @@
             <valueConverters:JPropertyTypeToColorConverter x:Key="JPropertyTypeToColorConverter"/>
             <valueConverters:JValueTypeToColorConverter x:Key="JValueTypeToColorConverter"/>
             <valueConverters:JArrayLengthConverter x:Key="JArrayLengthConverter"/>
+            
             <HierarchicalDataTemplate x:Key="KeyValuePairJObject"  
                                       ItemsSource="{Binding Value}">
                 <StackPanel Orientation="Horizontal" Margin="1">
@@ -32,6 +33,7 @@
                     <TextBlock Text=": " Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
+            
             <DataTemplate x:Key="KeyValuePair">
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text="{Binding Path=Key}" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
@@ -54,7 +56,8 @@
                     <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
-            <HierarchicalDataTemplate  x:Key="ObjectPropertyTemplate" DataType="{x:Type jlinq:JProperty}" ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
+            <HierarchicalDataTemplate  x:Key="ObjectPropertyTemplate" DataType="{x:Type jlinq:JProperty}" 
+                                       ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
                     <TextBlock Text=" : "/>
@@ -359,9 +362,19 @@
                   Background="White"
                   BorderThickness="0"
                   EnableRowVirtualization="True"   
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="37,0,-37,0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
                   >
+
+            <!--                   
+                AreRowDetailsFrozen="True" 
+            -->
+
             <!--
+            <DataGrid.Style>
+                <Style TargetType="DataGridDetailsPresenter">
+                    <Setter TargetName="" ></Setter>
+                </Style>
+            </DataGrid.Style>
             <DataGrid.Style>
                 <Style TargetType="DataGrid">
                     <Style.Triggers>
@@ -468,17 +481,22 @@
             </DataGrid.Columns>
 
             <DataGrid.RowDetailsTemplate>
-
                 <DataTemplate>
                     <!-- Is Border necessary ?  Not, leave it for now
                     -->
-                    <Border BorderThickness="0" Background="BlanchedAlmond" Padding="0" >
-                        <!--If IsEanble is true, then Scrollbar won't move. -->
+                    <Border BorderThickness="0" Background="BlanchedAlmond" Padding="0"  >
+                        <!--If IsEanble is true, then Scrollbar won't move.  
+                           IsEnable is not good either... 
+                        -->
                         <TreeView Name="ResultTreeView" BorderThickness="0" 
                                   ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
-                                  ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}" 
-                                  IsEnabled="False"                                  
+                                  ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}"                                     
                                   >
+                            <TreeView.Template>
+                                <ControlTemplate>
+                                    <ItemsPresenter />
+                                </ControlTemplate>
+                            </TreeView.Template>
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}" >
                                     <Setter Property="IsExpanded" Value="True" />
@@ -486,26 +504,18 @@
                             </TreeView.ItemContainerStyle>
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
-                                    <TreeViewItem>
-                                        <TreeViewItem.Header>
-                                            <StackPanel Orientation="Horizontal" Margin="-10,0,0,0">
+                                            <StackPanel Orientation="Horizontal" >
                                                 <TextBlock Text="{Binding Path=Name}"/>
                                                 <TextBlock Text=" : "/>
                                                 <TextBlock Text="{Binding Path=Value}"/>
                                             </StackPanel>
-                                        </TreeViewItem.Header>
-                                    </TreeViewItem>
                                 </HierarchicalDataTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type viewer:Payload}" ItemsSource="{Binding Path=Value}">
-                                    <TreeViewItem>
-                                        <TreeViewItem.Header>
-                                            <StackPanel Orientation="Horizontal" Margin="-10,0,0,0">
+                                            <StackPanel Orientation="Horizontal" >
                                                 <TextBlock Text="{Binding Path=Name}"/>
                                                 <TextBlock Text=" : "/>
                                                 <TextBlock Text="{Binding Path=Value}"/>
                                             </StackPanel>
-                                        </TreeViewItem.Header>
-                                    </TreeViewItem>
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>
                         </TreeView>
