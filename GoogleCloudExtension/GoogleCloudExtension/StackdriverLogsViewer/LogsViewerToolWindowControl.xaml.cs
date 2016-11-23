@@ -106,8 +106,45 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private void dg_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
+            //if (row != null)
+            //{
+            //    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+            //}
+
             dg.UnselectAll();
         }
+
+        private void dg_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            DependencyObject dep = (DependencyObject)e.OriginalSource;
+
+            // iteratively traverse the visual tree
+            while ((dep != null) && !(dep is DataGridCell))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep == null)
+                return;
+
+
+            DataGridCell cell = dep as DataGridCell;
+            // do something
+
+            // navigate further up the tree
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            DataGridRow row = dep as DataGridRow;
+            if (row != null)
+            {
+                row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+            }
+        }
+
 
         private void btnExpandAll_Click(object sender, RoutedEventArgs e)
         {
