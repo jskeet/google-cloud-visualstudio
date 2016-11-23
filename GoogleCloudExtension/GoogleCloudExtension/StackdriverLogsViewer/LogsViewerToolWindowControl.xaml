@@ -18,7 +18,9 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            
+
+            <BitmapImage x:Key="GoogleLogo" UriSource="logo_cloud_128.png" />
+
             <valueConverters:MethodToValueConverter x:Key="MethodToValueConverter"/>
             <valueConverters:ComplexPropertyMethodToValueConverter x:Key="ComplexPropertyMethodToValueConverter"/>
             <valueConverters:JValueConverter x:Key="JValueConverter"/>
@@ -271,9 +273,9 @@
 
             <Style x:Key="rowStyle" TargetType="DataGridRow">
                 <Setter Property="TextBlock.TextWrapping" Value="NoWrap" />
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
-                <Setter Property="BorderThickness" Value="0, 0, 0, 1"/>
+                <Setter Property="Padding"  Value="0, 1, 0, 1"  />
+                <Setter Property="Margin" Value="0, 0, 0, 1"/>
+                <Setter Property="BorderThickness" Value="0, 0, 0, 0"/>
                 <Setter Property="BorderBrush" Value="LightGray" />
                 <Setter Property="Background" Value="#FFFDFDFD" />
                 <!--
@@ -290,10 +292,12 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" >
-            <TextBlock Text="{Binding Path=Project}" />
+        <StackPanel Orientation="Horizontal" Margin="0, 0, 0, 5" >
+            <Image Source="{Binding Path=LogoImage}" Margin="2, 0, 0, 0" />
+            <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
+            <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
             <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
             <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}" >
                 <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
@@ -347,8 +351,8 @@
                         </StackPanel>
                     </Popup>
                 </StackPanel>
-                <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" Margin="0, 0,  16, 0"  />
             </StackPanel>
+            <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" Margin="0, 0, 16, 0"  />
         </StackPanel>
         <DataGrid Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 20" IsReadOnly="True"
@@ -406,12 +410,12 @@
                                         <!--
                                         This appllies customized toggle button.
                                             <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
-                                        <Expander IsExpanded="True">
+                                        <Expander IsExpanded="True"  Background="LightGray">
                                             <Expander.Header>
-                                                <StackPanel Orientation="Horizontal" >
-                                                    <TextBlock Text="{Binding Path=Name}" />
-                                                    <TextBlock Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
-                                                    <TextBlock Text="Element(s)"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
+                                                        <TextBlock Text="{Binding Path=Name}" />
+                                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
+                                                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)"/>
                                                 </StackPanel>
                                             </Expander.Header>
                                             <ItemsPresenter />
@@ -449,12 +453,23 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>-->
 
-                <DataGridTextColumn Binding="{Binding SeverityLevel}"  />
+                <DataGridTextColumn Binding="{Binding SeverityLevel}"  >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Button  ToolTip="Exapand All" Click="btnExpandAll_Click" 
+                                    Height="15" Padding="0" BorderThickness="0" >
+                                <TextBlock Text="V" Padding="0" Background="White" />
+                            </Button>
+                                    
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+                                    
 
 
-                <DataGridTextColumn Binding="{Binding Time}"
-                                Header="Time">
-                    <!--DataGridTextColumn.HeaderTemplate>
+                <DataGridTextColumn Binding="{Binding Time}" />
+                <!--Header="Time">-->
+                <!--DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Content, RelativeSource=
@@ -463,7 +478,7 @@
                             </StackPanel>
                         </DataTemplate>
                     </ -->
-                </DataGridTextColumn>
+
                 <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
                     <DataGridTextColumn.HeaderTemplate>

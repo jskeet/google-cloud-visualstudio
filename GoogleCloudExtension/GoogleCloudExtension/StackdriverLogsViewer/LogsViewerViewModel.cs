@@ -22,11 +22,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System;
 using System.Threading.Tasks;
 
 using System.Diagnostics;
-using System.Text;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -188,7 +188,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private ObservableCollection<LogItem> _logs = new ObservableCollection<LogItem>();
         ListCollectionView _collectionView;
         private Object _collectionViewLock = new Object();
-
+        private string _filter;
 
         public LogEntriesViewModel()
         {
@@ -246,16 +246,33 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                Debug.Assert(false, "Does not expect a get");
-                return "";
+                return _filter; 
             }
 
             set
             {
-                Debug.WriteLine($"MessageFilter is called {value}");
+                _filter = value;
+                if (string.IsNullOrWhiteSpace(_filter))
+                {
+                    _collectionView.Filter = null;
+                    return;
+                }
+
+                Debug.WriteLine($"MessageFilter is called {_filter}");
                 lock (_collectionViewLock)
                 {
-                    _collectionView.Filter = new Predicate<object>(item => ((LogItem)item).Message.Contains(value));
+                    var splits = _filter.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    _collectionView.Filter = new Predicate<object>(item => {
+                        foreach (var subFilter in splits)
+                        {
+                            if (((LogItem)item).Message.Contains(subFilter))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    });
                 }
             }
         }
@@ -266,6 +283,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     /// </summary>
     public class LogsViewerViewModel : ViewModelBase
     {
+        private const string GoogleCloudLogoPath = "Theming/Resources/GCP_logo_horizontal.png";
+        private static readonly Lazy<ImageSource> s_logo = 
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(GoogleCloudLogoPath));
+        public ImageSource LogoImage => s_logo.Value;
+
         private string _loadingProgress;
         private Lazy<LoggingDataSource> _dataSource;
         private ProtectedCommand _loadNextPageCommand;
@@ -315,11 +337,33 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         } 
 
+        public string Account
+        {
+            get
+            {
+                if (CredentialsStore.Default?.CurrentAccount?.AccountName != null)
+                {
+                    return CredentialsStore.Default?.CurrentAccount?.AccountName;
+                }
+                else
+                {
+                    return "Setup Account Is Needed";
+                }
+            }
+        }
+
         public string Project
         {
             get
             {
-                return CredentialsStore.Default.CurrentProjectId;
+                if (CredentialsStore.Default?.CurrentProjectId == null)
+                {
+                    return "";
+                }
+                else
+                {
+                    return CredentialsStore.Default.CurrentProjectId;
+                }
             }
         }
 
@@ -400,8 +444,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private async void Reload(string filter)
         {
+            var finalFilter = $"{filter} {LogEntriesViewModel.MessageFilter}";
+            finalFilter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
+
             await LogLoaddingWrapper(async () => {
-                var logs = await _dataSource.Value.GetLogEntryListAsync(filter);
+                var logs = await _dataSource.Value.GetLogEntryListAsync(finalFilter);
                 LogEntriesViewModel.SetLogs(logs);
                 FilterViewModel.UpdateFilterWithLogEntries(logs);
             });
