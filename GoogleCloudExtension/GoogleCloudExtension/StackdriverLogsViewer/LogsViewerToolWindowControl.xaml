@@ -18,7 +18,7 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-
+            
             <valueConverters:MethodToValueConverter x:Key="MethodToValueConverter"/>
             <valueConverters:ComplexPropertyMethodToValueConverter x:Key="ComplexPropertyMethodToValueConverter"/>
             <valueConverters:JValueConverter x:Key="JValueConverter"/>
@@ -29,22 +29,22 @@
             <HierarchicalDataTemplate x:Key="KeyValuePairJObject"  
                                       ItemsSource="{Binding Value}">
                 <StackPanel Orientation="Horizontal" Margin="1">
-                    <TextBlock Text="{Binding Path=Key}" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
-                    <TextBlock Text=": " Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path=Key}" Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                    <TextBlock Text=": "  Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
             
             <DataTemplate x:Key="KeyValuePair">
                 <StackPanel Orientation="Horizontal" Margin="1">
-                    <TextBlock Text="{Binding Path=Key}" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
-                    <TextBlock Text=": " Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Path=Value}"  Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path=Key}"   Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                    <TextBlock Text=": "   Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path=Value}"    Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
                 </StackPanel>
             </DataTemplate>
             <HierarchicalDataTemplate DataType="{x:Type jlinq:JArray}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
                 <StackPanel Orientation="Horizontal" Margin="1">
-                    <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+                    <TextBlock Text="array"   Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" />
                 </StackPanel>
             </HierarchicalDataTemplate>
             <HierarchicalDataTemplate  x:Key="ArrayPropertyTemplate" DataType="{x:Type jlinq:JProperty}" 
@@ -52,8 +52,8 @@
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
                     <TextBlock Text=" : "/>
-                    <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+                    <TextBlock Text="array"   Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" />
                 </StackPanel>
             </HierarchicalDataTemplate>
             <HierarchicalDataTemplate  x:Key="ObjectPropertyTemplate" DataType="{x:Type jlinq:JProperty}" 
@@ -61,7 +61,7 @@
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
                     <TextBlock Text=" : "/>
-                    <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+                    <TextBlock Text="{}{ }"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
             <DataTemplate x:Key="PrimitivePropertyTemplate" DataType="{x:Type jlinq:JProperty}" >
@@ -74,13 +74,13 @@
                     <!-- MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" -->
                     <TextBlock  Width="300"  
                            TextWrapping="Wrap" Text="{Binding Path=Value, Converter={StaticResource JValueConverter}}" 
-                           Foreground="{Binding Converter={StaticResource JPropertyTypeToColorConverter}}" />
+                            />
                 </StackPanel>
             </DataTemplate>
             <HierarchicalDataTemplate DataType="{x:Type jlinq:JObject}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text=" "/>
-                    <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+                    <TextBlock Text="{}{ }" />
                 </StackPanel>
             </HierarchicalDataTemplate>
             <HierarchicalDataTemplate DataType="{x:Type jlinq:JConstructor}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
@@ -101,7 +101,7 @@
                 <!-- MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" -->
                 <TextBlock  Width="300" 
                            TextWrapping="Wrap" Text="{Binding Converter={StaticResource JValueConverter}}" 
-                           Foreground="{Binding Converter={StaticResource JValueTypeToColorConverter}}" />
+                            />
             </DataTemplate>
 
 
@@ -482,15 +482,13 @@
 
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
-                    <!-- Is Border necessary ?  Not, leave it for now
+                    <!-- Is Border necessary ?  Leave it for now
                     -->
-                    <Border BorderThickness="0" Background="BlanchedAlmond" Padding="0"  >
-                        <!--If IsEanble is true, then Scrollbar won't move.  
-                           IsEnable is not good either... 
-                        -->
+                    <Border BorderThickness="0" Background="White" Padding="0" Margin="30, 0 , 0 , 0" >
                         <TreeView Name="ResultTreeView" BorderThickness="0" 
                                   ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
-                                  ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}"                                     
+                                  ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}"   
+                                  Foreground="Brown"
                                   >
                             <TreeView.Template>
                                 <ControlTemplate>
@@ -500,22 +498,21 @@
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}" >
                                     <Setter Property="IsExpanded" Value="True" />
+                                    <Setter Property="Foreground" Value="DarkSlateGray" />
                                 </Style>
                             </TreeView.ItemContainerStyle>
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
-                                            <StackPanel Orientation="Horizontal" >
-                                                <TextBlock Text="{Binding Path=Name}"/>
-                                                <TextBlock Text=" : "/>
-                                                <TextBlock Text="{Binding Path=Value}"/>
-                                            </StackPanel>
+                                    <StackPanel Orientation="Horizontal" >
+                                        <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                                        <TextBlock Text=":" Padding="3, 0, 3, 1"   Margin="0,0,5,0" Visibility="{Binding ValueVisibility}"/>
+                                        <TextBlock Text="{Binding Path=DisplayValue}"/>
+                                    </StackPanel>
                                 </HierarchicalDataTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type viewer:Payload}" ItemsSource="{Binding Path=Value}">
-                                            <StackPanel Orientation="Horizontal" >
-                                                <TextBlock Text="{Binding Path=Name}"/>
-                                                <TextBlock Text=" : "/>
-                                                <TextBlock Text="{Binding Path=Value}"/>
-                                            </StackPanel>
+                                    <StackPanel Orientation="Horizontal" >
+                                        <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0" />
+                                    </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>
                         </TreeView>

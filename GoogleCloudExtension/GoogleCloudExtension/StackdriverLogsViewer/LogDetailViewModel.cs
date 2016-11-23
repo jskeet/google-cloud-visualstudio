@@ -68,6 +68,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             Name = name;
             Value = value;
+
         }
 
         public string Name { get; }
@@ -99,9 +100,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             LogItem log = value as LogItem;
             var objNode = new ObjectNode(log.Entry);
-            AddPayload(objNode.Children, nameof(log.Entry.JsonPayload), log.Entry.JsonPayload);
-            AddPayload(objNode.Children, nameof(log.Entry.Labels), log.Entry.Labels);
-            AddPayload(objNode.Children, nameof(log.Entry.ProtoPayload), log.Entry.ProtoPayload);
+            //AddPayload(objNode.Children, nameof(log.Entry.JsonPayload), log.Entry.JsonPayload);
+            //AddPayload(objNode.Children, nameof(log.Entry.Labels), log.Entry.Labels);
+            //AddPayload(objNode.Children, nameof(log.Entry.ProtoPayload), log.Entry.ProtoPayload);
             return objNode.Children;
         }
 
@@ -116,7 +117,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #region Private Properties
 
         private string _name;
-        private object _value;
+        private object _displayValue;
         private Type _type;
 
         #endregion
@@ -155,11 +156,24 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
-        public object Value
+        public Visibility ValueVisibility
         {
             get
             {
-                return _value;
+                if (DisplayValue == null || string.IsNullOrWhiteSpace(DisplayValue.ToString()))
+                {
+                    return Visibility.Hidden;
+                }
+
+                return Visibility.Visible;
+            }
+        }
+
+        public object DisplayValue
+        {
+            get
+            {
+                return _displayValue;
             }
         }
 
@@ -177,23 +191,49 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         #region Private Methods
 
-        private bool IsList(object o)
+        private bool IsList(Type t)
+        {
+            return t.IsGenericType && t.GetGenericTypeDefinition().IsAssignableFrom(typeof(IList<>));
+        }
+
+        private bool IsDictionary(Type t)
+        {
+            return t.IsGenericType && t.GetGenericTypeDefinition().IsAssignableFrom(typeof(IDictionary<,>));
+        }
+
+        private bool IsListObject(object o)
         {
             if (o == null) return false;
             return o is IList &&
                    o.GetType().IsGenericType &&
-                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));
+                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(IList<>));
         }
 
-        private bool IsDictionary(object o)
+        private bool IsDictionaryObject(object o)
         {
             if (o == null) return false;
             return o is IDictionary &&
                    o.GetType().IsGenericType &&
-                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
+                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(IDictionary<,>));
         }
 
         private void ParseObjectTree(string name, object value, Type type)
+        {
+            ParseObjectTreeImpl(name, value, type);
+            if (Children?.Count > 0)
+            {
+                _displayValue = string.Empty;
+            }
+            else
+            {
+                if (_displayValue == null && value != null)
+                {
+                    _displayValue = value.ToString();
+                }
+            }
+        }
+
+        private void ParseObjectTreeImpl(string name, object value, Type type)
         {
             Children = new ObservableCollection<object>();
 
@@ -205,9 +245,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 return;
             }
 
-            if (IsDictionary(value) || IsList(value))
+            if (IsDictionaryObject(value) || IsListObject(value))
             {
-                _value = type.Name;
+                // _value = type.Name;
+                Children.Add(new Payload(name, value));
                 return;
             }
 
@@ -217,17 +258,23 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 {
                     if (value != null)
                     {
-                        _value = "\"" + value + "\"";
+                        _displayValue = "\"" + value + "\"";
                     }
                 }
                 else if (value is double || value is bool || value is int || value is float || value is long || value is decimal)
                 {
-                    _value = value;
+                    _displayValue = value;
                 }
                 else
                 {
-                    _value = "{" + value.ToString() + "}";
+                    _displayValue = "{" + value.ToString() + "}";
                 }
+            }
+
+            // Add some well known types that need to be excluded here.
+            if (type == typeof(string))
+            {
+                return;
             }
 
             PropertyInfo[] props = type.GetProperties();
@@ -255,7 +302,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     continue;
                 }
 
-                if (p.PropertyType.IsClass || p.PropertyType.IsArray)
+                if (IsDictionary(p.PropertyType) || IsList(p.PropertyType))
+                {
+                    object v = p.GetValue(value, null);
+                    if (v != null)
+                    {
+                        Children.Add(new Payload(p.Name, v));
+                    }
+                }
+                else if (p.PropertyType.IsClass || p.PropertyType.IsArray)
                 {
                     if (p.PropertyType.IsArray)
                     {
@@ -309,6 +364,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     {
                         try
                         {
+                            // String value is added here
                             object v = p.GetValue(value, null);
                             if (v != null)
                             {
@@ -337,20 +393,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                         Debug.WriteLine(ex.ToString());
                     }
                 }
-                else if (p.PropertyType.IsGenericType)
+                else
                 {
                     try
                     {
                         object v = p.GetValue(value);
-
                         if (v != null)
                         {
-                            // var objNode = new ObjectNode(p.Name, v, p.PropertyType);
-                            // Children.Add(v);
+                            Children.Add(new ObjectNode(p.Name, v, p.PropertyType));
                         }
                     }
                     catch (Exception ex)
                     {
+                        Children.Add(new Payload(p.Name,  $"Type: {p.PropertyType}. PropertyInfo.GetValue failed"));
                         Debug.WriteLine(ex.ToString());
                     }
                 }
