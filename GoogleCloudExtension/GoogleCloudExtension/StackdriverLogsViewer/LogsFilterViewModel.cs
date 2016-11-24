@@ -82,15 +82,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     }
 
 
-    public class FilterEventArg : EventArgs
-    {
-        public string Filter { get; private set; }
+    ////public class FilterEventArg : EventArgs
+    ////{
+    ////    public string Filter { get; private set; }
 
-        public FilterEventArg(string filter)
-        {
-            Filter = filter;
-        }
-    }
+    ////    public FilterEventArg(string filter)
+    ////    {
+    ////        Filter = filter;
+    ////    }
+    ////}
 
     public class LogsFilterViewModel : ViewModelBase
     {
@@ -107,10 +107,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         #region Filter change 
-        public event EventHandler<FilterEventArg> FilterChanged;
-        public void NotifyFilterChanged() => FilterChanged?.Invoke(this, new FilterEventArg(Filter));
+        public event EventHandler FilterChanged;
+        public void NotifyFilterChanged() => FilterChanged?.Invoke(this, new EventArgs());
 
-        private string Filter
+        public string Filter
         {
             get
             {

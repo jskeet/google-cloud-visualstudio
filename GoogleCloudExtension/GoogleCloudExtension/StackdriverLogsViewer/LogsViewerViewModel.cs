@@ -273,6 +273,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                         return false;
                     });
+
+                    // TODO: Add filter changed event handler
+                    // So that LogsViewerViewModel can disable the next page button.
                 }
             }
         }
@@ -288,6 +291,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             new Lazy<ImageSource>(() => ResourceUtils.LoadImage(GoogleCloudLogoPath));
         public ImageSource LogoImage => s_logo.Value;
 
+        private string _nextPageToken;
         private string _loadingProgress;
         private Lazy<LoggingDataSource> _dataSource;
         private ProtectedCommand _loadNextPageCommand;
@@ -314,14 +318,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             
             LogEntriesViewModel = new LogEntriesViewModel();
             FilterViewModel = new LogsFilterViewModel();
-            FilterViewModel.FilterChanged += (sender, e) => Reload(e.Filter);
+            FilterViewModel.FilterChanged += (sender, e) => Reload();
             LoadOnStartup();
         }
 
         private async void LoadOnStartup()
         {
             FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorAsync();
-            Reload(null);
+            Reload();
             FilterOutResource();
         }
 
@@ -392,18 +396,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             string filter = $"resource.type=\"{resourceDescriptor.Type}\"";
             try
             {
-                _dataSource.Value.PageSize = 1;
-                var result =  await _dataSource.Value.GetLogEntryListAsync(filter);
-                return result != null && result.Count > 0;
+                var result =  await _dataSource.Value.GetLogEntryListAsync(filter, pageSize:1);
+                return result?.Item1 != null && result.Item1.Count > 0;
             }
-            catch
+            catch (Exception ex)
             {
                 // If exception happens. Keep the type.
+                Debug.WriteLine($"Check Resource Type Log Entry failed {ex.ToString()}");
                 return true;
-            }
-            finally
-            {
-                _dataSource.Value.PageSize = null;
             }
         }
 
@@ -439,33 +439,44 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
 
             _refreshCommand.CanExecuteCommand = true;
-            _loadNextPageCommand.CanExecuteCommand = true;
         }
 
-        private async void Reload(string filter)
-        {
-            var finalFilter = $"{filter} {LogEntriesViewModel.MessageFilter}";
-            finalFilter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
 
+        private string CurrentFilter()
+        {
+            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+            return string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
+        }
+
+        private async void Reload()
+        {
             await LogLoaddingWrapper(async () => {
-                var logs = await _dataSource.Value.GetLogEntryListAsync(finalFilter);
-                LogEntriesViewModel.SetLogs(logs);
-                FilterViewModel.UpdateFilterWithLogEntries(logs);
+                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentFilter());
+                LogEntriesViewModel.SetLogs(result?.Item1);
+                _nextPageToken = result?.Item2;
+                _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
+                FilterViewModel.UpdateFilterWithLogEntries(result?.Item1);
             });
         }
 
         private void OnRefreshCommand()
         {
-            Reload(null);
+            Reload();
         }
 
         private async void LoadNextPage()
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(_nextPageToken));
+            if (string.IsNullOrWhiteSpace(_nextPageToken))
+            {
+                return;
+            }
+
             await LogLoaddingWrapper(async () =>
             {
-                var logs = await _dataSource.Value.GetNextPageLogEntryListAsync();
-                LogEntriesViewModel.AddLogs(logs);
-                FilterViewModel.UpdateFilterWithLogEntries(logs);
+                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(_nextPageToken, CurrentFilter());
+                LogEntriesViewModel.AddLogs(results?.Item1);
+                FilterViewModel.UpdateFilterWithLogEntries(results?.Item1);
             });
         }
 
