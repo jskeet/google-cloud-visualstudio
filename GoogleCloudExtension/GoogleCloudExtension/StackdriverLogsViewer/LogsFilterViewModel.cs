@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Text;
 using System.Linq;
+using System.Windows.Media;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -94,6 +95,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
     public class LogsFilterViewModel : ViewModelBase
     {
+        private const string ToggleButtonImagePath = "StackdriverLogsViewer/Resources/ToggleButton.bmp";
+
+        private static readonly Lazy<ImageSource> s_toggleButton = 
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ToggleButtonImagePath));
+
         public LogsFilterViewModel()
         {
             ResetLogIDs();
@@ -105,6 +111,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _startDateTime = DateTimeRangePicker.Start;
             _endDateTime = DateTimeRangePicker.End;
         }
+
+        public ImageSource ToggleButtonImage => s_toggleButton.Value;
 
         #region Filter change 
         public event EventHandler FilterChanged;

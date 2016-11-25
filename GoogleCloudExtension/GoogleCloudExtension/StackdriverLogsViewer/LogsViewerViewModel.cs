@@ -36,11 +36,32 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         INFO,
         WARNING,
         ERROR,
-        CRITICAL,
+        EMERGENCY,
     }
 
     internal class LogItem
     {
+        private const string AnyIconPath = "StackdriverLogsViewer/Resources/ic_log_level_any.png";
+        private const string DebugIconPath = "StackdriverLogsViewer/Resources/ic_log_level_debug.png";
+        private const string ErrorIconPath = "StackdriverLogsViewer/Resources/ic_log_level_error.png";
+        private const string FatalIconPath = "StackdriverLogsViewer/Resources/ic_log_level_fatal.png";
+        private const string InfoIconPath = "StackdriverLogsViewer/Resources/ic_log_level_info.png";
+        private const string WarningIconPath = "StackdriverLogsViewer/Resources/ic_log_level_warning.png";
+
+        private static readonly Lazy<ImageSource> s_any_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(AnyIconPath));
+        private static readonly Lazy<ImageSource> s_debug_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(DebugIconPath));
+        private static readonly Lazy<ImageSource> s_error_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ErrorIconPath));
+        private static readonly Lazy<ImageSource> s_fatal_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(FatalIconPath));
+        private static readonly Lazy<ImageSource> s_info_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(InfoIconPath));
+        private static readonly Lazy<ImageSource> s_warning_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(WarningIconPath));
+
+
         private DateTime _timestamp;
         private string _message;
 
@@ -50,7 +71,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             ConvertTimestamp(logEntry.Timestamp);
             _message = ComposeMessage();
         }
-
+        
         public string Date => _timestamp.ToShortDateString();
         public string Time => _timestamp.ToLongTimeString();
         public LogEntry Entry { get; private set; }
@@ -112,7 +133,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
-        public string SeverityLevel
+        public ImageSource SeverityLevel
         {
             get
             {
@@ -120,24 +141,24 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 if (string.IsNullOrWhiteSpace(Entry?.Severity) || 
                     !Enum.TryParse<LogSeverity>(Entry?.Severity, out logLevel))
                 {
-                    return string.Empty;
+                    return s_any_icon.Value;
                 }
 
                 switch (logLevel)
                 {
-                    case LogSeverity.CRITICAL:
-                        return "C";
+                    case LogSeverity.EMERGENCY:
+                        return s_fatal_icon.Value;
                     case LogSeverity.DEBUG:
-                        return "D";
+                        return s_debug_icon.Value;
                     case LogSeverity.ERROR:
-                        return "E";
+                        return s_error_icon.Value;
                     case LogSeverity.INFO:
-                        return "I";
+                        return s_info_icon.Value;
                     case LogSeverity.WARNING:
-                        return "W";
+                        return s_warning_icon.Value;
                 }
 
-                return string.Empty;
+                return s_any_icon.Value;
             }
         }
 

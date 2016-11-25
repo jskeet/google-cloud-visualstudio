@@ -111,107 +111,6 @@
 
 
 
-            <!--  The toggle button style -->
-            <ControlTemplate x:Key="SimpleExpanderButtonTemp" 
-             TargetType="{x:Type ToggleButton}">
-                <Border x:Name="ExpanderButtonBorder"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            Padding="{TemplateBinding Padding}"
-            >
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Rectangle Fill="Transparent"
-                       Grid.ColumnSpan="2"/>
-                        <Ellipse Name="Circle"
-                 Grid.Column="0"
-                 Stroke="DarkGray"
-                 Width="20"
-                 Height="20"
-                 HorizontalAlignment="Center"
-                 VerticalAlignment="Center"
-                 />
-                        <Path x:Name="Sign"
-              Grid.Column="0"
-              Data="M 0,5 H 10 M 5,0 V 10 Z"
-              Stroke="#FF666666"
-              Width="10"
-              Height="10"
-              StrokeThickness="2"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              RenderTransformOrigin="0.5,0.5"
-              >
-                            <Path.RenderTransform>
-                                <RotateTransform Angle="0"/>
-                            </Path.RenderTransform>
-                        </Path>
-                        <ContentPresenter x:Name="HeaderContent"
-                          Grid.Column="1"
-                          Margin="4,0,0,0"
-                          ContentSource="Content"/>
-                    </Grid>
-                </Border>
-                <ControlTemplate.Triggers>
-                    <!--Change the sign to minus when toggled-->
-                    <Trigger Property="IsChecked"
-                 Value="True">
-                        <Setter Property="Data" 
-               TargetName="Sign" Value="M 0,5 H 10 Z"/>
-                    </Trigger>
-
-                    <!-- MouseOver, Pressed behaviours-->
-                    <Trigger Property="IsMouseOver"
-                         Value="true">
-                        <Setter Property="Stroke"
-                            Value="#FF3C7FB1"
-                            TargetName="Circle"/>
-                        <Setter Property="Stroke"
-                            Value="#222"
-                            TargetName="Sign"/>
-                    </Trigger>
-                    <Trigger Property="IsPressed"
-                         Value="true">
-                        <Setter Property="Stroke"
-                            Value="#FF526C7B"
-                            TargetName="Circle"/>
-                        <Setter Property="StrokeThickness"
-                            Value="1.5"
-                            TargetName="Circle"/>
-                        <Setter Property="Stroke"
-                            Value="#FF003366"
-                            TargetName="Sign"/>
-                    </Trigger>
-                </ControlTemplate.Triggers>
-            </ControlTemplate>
-
-            <ControlTemplate x:Key="SimpleExpanderTemp" TargetType="{x:Type Expander}">
-                <DockPanel>
-                    <ToggleButton x:Name="ExpanderButton"
-                      DockPanel.Dock="Top"
-                      Template="{StaticResource SimpleExpanderButtonTemp}"
-                      Content="{TemplateBinding Header}"
-                      IsChecked="{Binding Path=IsExpanded, 
-                      RelativeSource={RelativeSource TemplatedParent}}"
-                      OverridesDefaultStyle="True"
-                      Padding="1.5,0">
-                    </ToggleButton>
-                    <ContentPresenter x:Name="ExpanderContent"
-                          Visibility="Collapsed"
-                          DockPanel.Dock="Bottom"/>
-                </DockPanel>
-                <ControlTemplate.Triggers>
-                    <Trigger Property="IsExpanded" Value="True">
-                        <Setter TargetName="ExpanderContent" Property="Visibility" Value="Visible"/>
-                    </Trigger>
-                </ControlTemplate.Triggers>
-
-
-            </ControlTemplate>
 
             <!--  The toggle button -->
             <viewer:VisbilityToBooleanConverter x:Key="VisbilityToBooleanConverter"/>
@@ -282,6 +181,8 @@
             <Setter Property="Background" Value="Black" /> 
             -->
             </Style>
+
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -292,20 +193,36 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Margin="0, 0, 0, 5" >
-            <Image Source="{Binding Path=LogoImage}" Margin="2, 0, 0, 0" />
-            <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
-            <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
+        <StackPanel Orientation="Vertical" Margin="2, 0, 0, 3" >
+            <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray">
+            <Image Source="{Binding Path=LogoImage}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
+            </Border>
+            <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray">
+                <StackPanel Orientation="Horizontal" Margin="2, 3, 0, 5"  >
+                <TextBlock Text="Project  :" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
+                <TextBlock Text="Account  :" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
+                <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
+
+            </StackPanel>
+           </Border>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
             <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
-            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}" >
+            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}"  
+                        Background="White">
                 <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
                           ItemsSource="{Binding Path=ResourcesSelection}"
                           SelectedItem="{Binding Path=SelectedResource}"
-                          DisplayMemberPath="DisplayName"
-                          />
+                          DisplayMemberPath="DisplayName" >
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="Background" Value="White" />
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+                        
 
                 <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
@@ -317,11 +234,49 @@
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           />
                 <StackPanel Margin="0, 0,  16, 0" >
-                    <Button Content="{Binding Path=DateTimeRange}" Command="{Binding Path=DateTimeRangeCommand}" >
-                    </Button>
-                    <Popup IsOpen="{Binding Path=IsPopupOpen}" StaysOpen="False" 
-                           Placement="Bottom" PopupAnimation="Slide" >
-                        <StackPanel Background="LightYellow">
+                    <!--<Button Content="{Binding Path=DateTimeRange}" Command="{Binding Path=DateTimeRangeCommand}" >
+                    </Button>-->
+                    <!--<ToggleButton x:Name="DateTimeFilterDropdown" Content="Jump To Date"
+                            IsChecked="{Binding Path=IsPopupOpen, Mode=TwoWay}" />-->
+                   
+                    <!--<ToggleButton  IsChecked="{Binding Path=IsPopupOpen, Mode=TwoWay}"  x:Name="DateTimeFilterDropdown" >
+                        <ToggleButton.Style>
+                            <Style TargetType="{x:Type ToggleButton}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Name="Text" Text="Jump To Text" HorizontalAlignment="Center" />
+                                                <Image Name="Image" Grid.Row="0" Grid.Column="1" 
+                                                       Source="{Binding Path=ToggleButtonImage}"
+                                                       Height="15" />
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="Text" Property="Text" Value="Here's some different text" />
+                                                    <Setter TargetName="Image" Property="Source" 
+                                                            Value="{Binding Path=ToggleButtonImage}"  />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>-->
+
+                    <ComboBox>
+
+                        <ComboBoxItem>
+                            <ComboBoxItem.Template>
+                                <ControlTemplate>
+                    <!--<Popup IsOpen="{Binding Path=IsPopupOpen}" StaysOpen="False" 
+                           Placement="Bottom" PopupAnimation="Slide" >-->
+                        <StackPanel Background="White">
                         <Grid  Height="Auto" Width="Auto" DataContext="{Binding Path=DateTimeRangePicker}" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -349,7 +304,11 @@
                         </Grid>
                         <Button  HorizontalAlignment="Right" Content="Set Range" Margin="5, 5, 0, 10" Command="{Binding SetRangeCommand}" />
                         </StackPanel>
-                    </Popup>
+                    <!--</Popup>-->
+                                </ControlTemplate>
+                            </ComboBoxItem.Template>
+                        </ComboBoxItem>
+                    </ComboBox>
                 </StackPanel>
             </StackPanel>
             <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" Margin="0, 0, 16, 0"  />
@@ -366,7 +325,7 @@
                   DataContext="{Binding Path=LogEntriesViewModel}"
                   ItemsSource="{Binding Path=LogEntryList}" 
                   Background="White"
-                  BorderThickness="0"
+                  BorderThickness="0, 1, 0, 0"
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
             PreviewMouseDown="dg_PreviewMouseDown"                  
@@ -453,20 +412,33 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>-->
 
-                <DataGridTextColumn Binding="{Binding SeverityLevel}"  >
-                    <DataGridTextColumn.HeaderTemplate>
+                <!--<DataGridTextColumn Binding="{Binding SeverityLevel}"  >
+                </DataGridTextColumn>-->
+
+
+                <DataGridTemplateColumn IsReadOnly="True">
+                    <DataGridTemplateColumn.Header>
+                        <Expander x:Name="allExpander" IsExpanded="False" 
+                                  ToolTip="Toggle All Log Entries Detail View"
+                                  Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed">
+                            <ItemsPresenter />
+                        </Expander>
+                        <!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
+                                     Padding="6" BorderThickness="1" 
+                                 
+                                 >
+                            <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
+                                    Margin="3,1,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>-->
+
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button  ToolTip="Exapand All" Click="btnExpandAll_Click" 
-                                    Height="15" Padding="0" BorderThickness="0" >
-                                <TextBlock Text="V" Padding="0" Background="White" />
-                            </Button>
-                                    
+                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="5, 1, 10, 1"/>
                         </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
-                                    
-
-
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
                 <DataGridTextColumn Binding="{Binding Time}" />
                 <!--Header="Time">-->
                 <!--DataGridTextColumn.HeaderTemplate>
@@ -477,17 +449,18 @@
                                 <TextBox x:Name="txtTime" Width="100" TextChanged="TextChanged"  />
                             </StackPanel>
                         </DataTemplate>
-                    </ -->
-
+                    </ -->                
+                
                 <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Content, RelativeSource=
-                                         {RelativeSource Mode=TemplatedParent}}"/>
+                                <!--<TextBlock Text="{Binding Content, RelativeSource=
+                                         {RelativeSource Mode=TemplatedParent}}"/>-->
                                 <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
-                                <TextBox x:Name="txtMessage" Width="150" 
+                                <TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
+                                         Margin="50, 0, 0, 0"
                                          Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
                                                 Mode=OneWayToSource,
                                                RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  />

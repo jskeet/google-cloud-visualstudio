@@ -158,6 +158,21 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        private void Expander_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            btnExpandAll_Click(null, null);
+        }
+
+        private void allExpander_Expanded(object sender, RoutedEventArgs e)
+        {
+            dg.RowDetailsVisibilityMode = DataGridRowDetailsVisibilityMode.Visible;
+        }
+
+        private void allExpander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            dg.RowDetailsVisibilityMode = DataGridRowDetailsVisibilityMode.Collapsed;
+        }
+
 
 
         ////#region JsonView
