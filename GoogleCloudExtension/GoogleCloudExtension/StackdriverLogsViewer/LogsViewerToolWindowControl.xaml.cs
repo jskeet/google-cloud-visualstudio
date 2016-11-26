@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using GoogleCloudExtension.Utils;
 using Google.Apis.Logging.v2.Data;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,12 +30,23 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     /// </summary>
     public partial class LogsViewerToolWindowControl : UserControl
     {
+        private const string RefreshImagePath = "StackdriverLogsViewer/Resources/refresh.png";
+        private const string RefreshMouseOverImagePath = "StackdriverLogsViewer/Resources/refresh-mouseover.png";
+        private const string RefreshMouseDownImagePath = "StackdriverLogsViewer/Resources/refresh-mouse-down.png";
+        private static readonly Lazy<ImageSource> s_refreshImage =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(RefreshImagePath));
+        private static readonly Lazy<ImageSource> s_refreshMouseOverImage =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(RefreshMouseOverImagePath));
+        private static readonly Lazy<ImageSource> s_refreshMouseDownImage =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(RefreshMouseDownImagePath));
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LogsViewerToolWindowControl"/> class.
         /// </summary>
         public LogsViewerToolWindowControl()
         {
             this.InitializeComponent();
+            refreshImage.Source = s_refreshImage.Value;
         }
 
 
@@ -173,7 +185,39 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             dg.RowDetailsVisibilityMode = DataGridRowDetailsVisibilityMode.Collapsed;
         }
 
+        private void btnRefresh_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                refreshImage.Source = s_refreshMouseDownImage.Value;
+            }
+        }
 
+        private void btnRefresh_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Released)
+            {
+                refreshImage.Source = s_refreshMouseOverImage.Value;
+            }
+        }
+
+        private void btnRefresh_MouseLeave(object sender, MouseEventArgs e)
+        {
+            refreshImage.Source = s_refreshImage.Value;
+        }
+
+        private void btnRefresh_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Released)
+            {
+                refreshImage.Source = s_refreshMouseOverImage.Value;
+            }
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                refreshImage.Source = s_refreshMouseDownImage.Value;
+            }
+
+        }
 
         ////#region JsonView
         ////private void JValue_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

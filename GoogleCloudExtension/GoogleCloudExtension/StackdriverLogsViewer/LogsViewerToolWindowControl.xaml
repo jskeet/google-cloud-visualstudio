@@ -210,7 +210,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
             <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
             <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}"  
-                        Background="White">
+                        Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
                           ItemsSource="{Binding Path=ResourcesSelection}"
@@ -311,7 +311,28 @@
                     </ComboBox>
                 </StackPanel>
             </StackPanel>
-            <Button Content="Refresh" Command="{Binding Path=RefreshCommand}" Margin="0, 0, 16, 0"  />
+            <Button x:Name="btnRefresh"                  
+                    ToolTip="{Binding Path=RefreshCommandToolTip}"
+                    Command="{Binding Path=RefreshCommand}" Margin="0, 0, 16, 0" 
+                    PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
+                    PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
+                    MouseEnter="btnRefresh_MouseEnter"
+                    MouseLeave="btnRefresh_MouseLeave"
+                    >
+                <Button.Style>
+                    <Style  TargetType="Button">
+                        <Setter Property="OverridesDefaultStyle" Value="True"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <ContentPresenter></ContentPresenter>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
+            </Button>
         </StackPanel>
         <DataGrid Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 20" IsReadOnly="True"
@@ -328,7 +349,8 @@
                   BorderThickness="0, 1, 0, 0"
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
-            PreviewMouseDown="dg_PreviewMouseDown"                  
+            PreviewMouseDown="dg_PreviewMouseDown"                
+                
                   >
 
             <!--                   
@@ -369,7 +391,7 @@
                                         <!--
                                         This appllies customized toggle button.
                                             <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
-                                        <Expander IsExpanded="True"  Background="LightGray">
+                                        <!--<Expander IsExpanded="True"  Background="LightGray">
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
                                                         <TextBlock Text="{Binding Path=Name}" />
@@ -378,8 +400,16 @@
                                                 </StackPanel>
                                             </Expander.Header>
                                             <ItemsPresenter />
-                                        </Expander>
+                                        </Expander>-->
 
+                                        <StackPanel  Background="LightGray">
+                                                <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
+                                                    <TextBlock Text="{Binding Path=Name}" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)"/>
+                                                </StackPanel>
+                                            <ItemsPresenter />
+                                        </StackPanel>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -418,10 +448,16 @@
 
                 <DataGridTemplateColumn IsReadOnly="True">
                     <DataGridTemplateColumn.Header>
+                        <!--<TextBlock >a</TextBlock>-->
                         <Expander x:Name="allExpander" IsExpanded="False" 
                                   ToolTip="Toggle All Log Entries Detail View"
-                                  Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed">
-                            <ItemsPresenter />
+                                  Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"
+                                 
+                                  >
+                            <Expander.LayoutTransform >
+                                <ScaleTransform ScaleX="0.9" ScaleY="0.9"></ScaleTransform>
+                            </Expander.LayoutTransform>
+
                         </Expander>
                         <!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
                                      Padding="6" BorderThickness="1" 
@@ -460,7 +496,7 @@
                                          {RelativeSource Mode=TemplatedParent}}"/>-->
                                 <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
                                 <TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
-                                         Margin="50, 0, 0, 0"
+                                         Margin="50, 0, 0, 0" FontSize="14"
                                          Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
                                                 Mode=OneWayToSource,
                                                RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  />

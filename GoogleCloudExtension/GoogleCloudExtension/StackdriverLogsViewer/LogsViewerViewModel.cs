@@ -324,6 +324,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public LogsFilterViewModel FilterViewModel { get; private set; }
 
         public ICommand RefreshCommand => _refreshCommand;
+        public string RefreshCommandToolTip => "Get newest log (descending order)";
         public ICommand LoadNextPageCommand => _loadNextPageCommand;
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
