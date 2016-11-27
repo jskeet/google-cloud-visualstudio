@@ -515,6 +515,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 reqParams.PageToken = _nextPageToken;
                 var results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams);
                 LogEntriesViewModel.AddLogs(results?.Item1);
+                _nextPageToken = results.Item2;
+                _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
                 FilterViewModel.UpdateFilterWithLogEntries(results?.Item1);
             });
         }
