@@ -51,6 +51,11 @@ namespace GoogleCloudExtension.DataSources
             /// If page size is not specified, a server side default value is used. 
             /// </summary>
             public int? PageSize;
+
+            /// <summary>
+            /// Optional "timestamp desc" or "timestamp asc"
+            /// </summary>
+            public string OrderBy;
         }
 
 
@@ -94,12 +99,13 @@ namespace GoogleCloudExtension.DataSources
         ///     A tuple of :   List of log entries,  optional next page token.
         /// </returns>
         public async Task<Tuple<IList<LogEntry>, string>> GetLogEntryListAsync(
-            string filter = null, int? pageSize = null)
+            string filter = null, bool descending=true, int? pageSize = null)
         {
             return await MakeAsyncRequest(new LogEntryRequestParams()
             {
                 Filter = filter,
-                PageSize = pageSize
+                PageSize = pageSize,
+                OrderBy = descending ? "timestamp desc" : "timestamp asc"
             });
         }
 
@@ -130,7 +136,8 @@ namespace GoogleCloudExtension.DataSources
                 ResourceNames = new List<string>(new string[] { projectsFilter }),
                 Filter = requestParams.Filter,
                 PageSize = requestParams.PageSize,
-                PageToken = requestParams.PageToken
+                PageToken = requestParams.PageToken,
+                OrderBy = requestParams.OrderBy
             };
         }
 

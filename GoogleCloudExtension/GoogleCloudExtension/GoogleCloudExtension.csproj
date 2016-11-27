@@ -226,6 +226,8 @@
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JValueConverter.cs" />
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JValueTypeToColorConverter.cs" />
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\MethodToValueConverter.cs" />
+    <Compile Include="StackdriverLogsViewer\JumpToLogDateTimePicker.xaml.cs" />
+    <Compile Include="StackdriverLogsViewer\LogDateTimePickerViewModel.cs" />
     <Compile Include="StackdriverLogsViewer\LogsFilterViewModel.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindow.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowCommand.cs" />
@@ -647,6 +649,10 @@
     <Resource Include="StackdriverLogsViewer\LogDetailTreeView.xaml">
       <SubType>Designer</SubType>
     </Resource>
+    <Page Include="StackdriverLogsViewer\JumpToLogDateTimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

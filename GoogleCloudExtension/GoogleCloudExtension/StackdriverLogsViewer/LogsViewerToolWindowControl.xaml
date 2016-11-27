@@ -226,90 +226,13 @@
 
                 <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
-                          SelectedItem="{Binding Path=SelectedLogID}"
-                          
+                          SelectedItem="{Binding Path=SelectedLogID}"                         
                           />
                 <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           />
-                <StackPanel Margin="0, 0,  16, 0" >
-                    <!--<Button Content="{Binding Path=DateTimeRange}" Command="{Binding Path=DateTimeRangeCommand}" >
-                    </Button>-->
-                    <!--<ToggleButton x:Name="DateTimeFilterDropdown" Content="Jump To Date"
-                            IsChecked="{Binding Path=IsPopupOpen, Mode=TwoWay}" />-->
-                   
-                    <!--<ToggleButton  IsChecked="{Binding Path=IsPopupOpen, Mode=TwoWay}"  x:Name="DateTimeFilterDropdown" >
-                        <ToggleButton.Style>
-                            <Style TargetType="{x:Type ToggleButton}">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Name="Text" Text="Jump To Text" HorizontalAlignment="Center" />
-                                                <Image Name="Image" Grid.Row="0" Grid.Column="1" 
-                                                       Source="{Binding Path=ToggleButtonImage}"
-                                                       Height="15" />
-                                            </Grid>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsChecked" Value="True">
-                                                    <Setter TargetName="Text" Property="Text" Value="Here's some different text" />
-                                                    <Setter TargetName="Image" Property="Source" 
-                                                            Value="{Binding Path=ToggleButtonImage}"  />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </ToggleButton.Style>
-                    </ToggleButton>-->
-
-                    <ComboBox>
-
-                        <ComboBoxItem>
-                            <ComboBoxItem.Template>
-                                <ControlTemplate>
-                    <!--<Popup IsOpen="{Binding Path=IsPopupOpen}" StaysOpen="False" 
-                           Placement="Bottom" PopupAnimation="Slide" >-->
-                        <StackPanel Background="White">
-                        <Grid  Height="Auto" Width="Auto" DataContext="{Binding Path=DateTimeRangePicker}" >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="5, 5, 0, 10" >
-                                <TextBlock Text ="Start" Margin="0, 0, 6, 0"/>
-                                <TextBlock Text="{Binding Path=StartDateTime}" Margin="0, 0, 3, 0" />
-                                <TextBlock Text ="End"  Margin="0, 0, 6, 0"/>
-                                <TextBlock Text="{Binding Path=EndtDateTime}" Margin="0, 0, 3, 0" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Grid.Row="1"  Margin="5, 5, 0, 10">
-                                <Button  Content="5 Day" Command="{Binding Path=FiveDayRangeCommand}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Grid.Row="2"  Margin="5, 5, 0, 10" >
-                                <TextBlock Text ="Start" Margin="0, 0, 6, 0"/>
-                                <DatePicker  Margin="0, 0, 6, 0" SelectedDate="{Binding Path=StartDateTime, Mode=TwoWay}" 
-                                             SelectedDateFormat="Short" />
-
-                                <TextBlock Text ="End"  Margin="0, 0, 6, 0"/>
-                                <DatePicker Margin="0, 0, 6, 0" SelectedDate="{Binding Path=EndtDateTime, Mode=TwoWay}" />
-                            </StackPanel>
-                        </Grid>
-                        <Button  HorizontalAlignment="Right" Content="Set Range" Margin="5, 5, 0, 10" Command="{Binding SetRangeCommand}" />
-                        </StackPanel>
-                    <!--</Popup>-->
-                                </ControlTemplate>
-                            </ComboBoxItem.Template>
-                        </ComboBoxItem>
-                    </ComboBox>
-                </StackPanel>
+                <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" />
             </StackPanel>
             <Button x:Name="btnRefresh"                  
                     ToolTip="{Binding Path=RefreshCommandToolTip}"
@@ -349,8 +272,7 @@
                   BorderThickness="0, 1, 0, 0"
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
-            PreviewMouseDown="dg_PreviewMouseDown"                
-                
+                  PreviewMouseDown="dg_PreviewMouseDown"                                
                   >
 
             <!--                   

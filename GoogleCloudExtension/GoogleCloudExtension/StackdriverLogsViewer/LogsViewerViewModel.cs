@@ -473,7 +473,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private async void Reload()
         {
             await LogLoaddingWrapper(async () => {
-                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentFilter());
+                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentFilter(), 
+                    descending:FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
                 LogEntriesViewModel.SetLogs(result?.Item1);
                 _nextPageToken = result?.Item2;
                 _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);

@@ -33,54 +33,54 @@ using System.Windows.Media;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
-    public class DateTimeRangeModelView : ViewModelBase
-    {
-        public DateTime Start = DateTime.Now.AddDays(-30);
-        public DateTime End = DateTime.MaxValue;
+    //public class DateTimeRangeModelView : ViewModelBase
+    //{
+    //    public DateTime Start = DateTime.Now.AddDays(-30);
+    //    public DateTime End = DateTime.MaxValue;
 
-        public DateTimeRangeModelView()
-        {
-            FiveDayRangeCommand = new ProtectedCommand(()=> {
-                StartDateTime = DateTime.Now.AddDays(-5).ToString("O");
-            });
-        }
+    //    public DateTimeRangeModelView()
+    //    {
+    //        FiveDayRangeCommand = new ProtectedCommand(()=> {
+    //            StartDateTime = DateTime.Now.AddDays(-5).ToString("O");
+    //        });
+    //    }
 
-        private DateTime ConvertTime(string timeString)
-        {
-            DateTime dt = DateTime.Parse(timeString);
-            return TimeZoneInfo.ConvertTime(dt, destinationTimeZone: TimeZoneInfo.Local);
-        }
+    //    private DateTime ConvertTime(string timeString)
+    //    {
+    //        DateTime dt = DateTime.Parse(timeString);
+    //        return TimeZoneInfo.ConvertTime(dt, destinationTimeZone: TimeZoneInfo.Local);
+    //    }
 
-        public ProtectedCommand FiveDayRangeCommand { get; private set; }
+    //    public ProtectedCommand FiveDayRangeCommand { get; private set; }
 
-        public string StartDateTime
-        {
-            get
-            {
-                return Start.ToString("O");
-            }
+    //    public string StartDateTime
+    //    {
+    //        get
+    //        {
+    //            return Start.ToString("O");
+    //        }
 
-            set
-            {
-                Start = ConvertTime(value);
-                RaisePropertyChanged(nameof(StartDateTime));
-            }
-        }
+    //        set
+    //        {
+    //            Start = ConvertTime(value);
+    //            RaisePropertyChanged(nameof(StartDateTime));
+    //        }
+    //    }
 
-        public string EndtDateTime
-        {
-            get
-            {
-                return End.ToString("O");
-            }
+    //    public string EndtDateTime
+    //    {
+    //        get
+    //        {
+    //            return End.ToString("O");
+    //        }
 
-            set
-            {
-                End = ConvertTime(value);
-                RaisePropertyChanged(nameof(EndtDateTime));
-            }
-        }
-    }
+    //        set
+    //        {
+    //            End = ConvertTime(value);
+    //            RaisePropertyChanged(nameof(EndtDateTime));
+    //        }
+    //    }
+    //}
 
 
     ////public class FilterEventArg : EventArgs
@@ -103,13 +103,18 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public LogsFilterViewModel()
         {
             ResetLogIDs();
-            _dateTimeRangeCommand = new ProtectedCommand(() =>
-            {
-                IsPopupOpen = !IsPopupOpen;
-            });
-            _setRangeCommand = new ProtectedCommand(SetDateTimeRange);
-            _startDateTime = DateTimeRangePicker.Start;
-            _endDateTime = DateTimeRangePicker.End;
+            //_dateTimeRangeCommand = new ProtectedCommand(() =>
+            //{
+            //    IsPopupOpen = !IsPopupOpen;
+            //});
+            //_setRangeCommand = new ProtectedCommand(SetDateTimeRange);
+            //_startDateTime = DateTimeRangePicker.Start;
+            //_endDateTime = DateTimeRangePicker.End;
+
+            DateTimePickerViewModel = new LogDateTimePickerViewModel();
+            DateTimePickerViewModel.DateTimeFilterChange += (sender, e) => {
+                NotifyFilterChanged();
+            };
         }
 
         public ImageSource ToggleButtonImage => s_toggleButton.Value;
@@ -146,15 +151,24 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     filter.AppendLine($"severity={_selectedLogSeverity}");
                 }
 
-                if (_startDateTime > DateTime.MinValue)
+                if (DateTimePickerViewModel.IsDecendingOrder)
                 {
-                    filter.AppendLine($"timestamp>=\"{_startDateTime.ToString("O")}\"");
+                    filter.AppendLine($"timestamp<=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
+                }
+                else
+                {
+                    filter.AppendLine($"timestamp>=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
                 }
 
-                if (_endDateTime < DateTime.Now.AddMinutes(30))
-                {
-                    filter.AppendLine($"timestamp<=\"{_endDateTime.ToString("O")}\"");
-                }
+                //if (_startDateTime > DateTime.MinValue)
+                //{
+                //    filter.AppendLine($"timestamp>=\"{_startDateTime.ToString("O")}\"");
+                //}
+
+                //if (_endDateTime < DateTime.Now.AddMinutes(30))
+                //{
+                //    filter.AppendLine($"timestamp<=\"{_endDateTime.ToString("O")}\"");
+                //}
 
                 return filter.Length > 0 ? filter.ToString() : null;
             }
@@ -336,64 +350,65 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
 
         #region Date time range 
-        private DateTimeRangeModelView _dateTimeRangePicker = new DateTimeRangeModelView();
-        private string _dateTimeRange = "This is the current range";
-        private ProtectedCommand _dateTimeRangeCommand;
-        private ProtectedCommand _setRangeCommand;
-        private bool _isPopupOpen = false;
-        public ICommand DateTimeRangeCommand => _dateTimeRangeCommand;
-        public ICommand SetRangeCommand => _setRangeCommand;
-        private DateTime _startDateTime;
-        private DateTime _endDateTime;
+        //private DateTimeRangeModelView _dateTimeRangePicker = new DateTimeRangeModelView();
+        //private string _dateTimeRange = "This is the current range";
+        //private ProtectedCommand _dateTimeRangeCommand;
+        //private ProtectedCommand _setRangeCommand;
+        //private bool _isPopupOpen = false;
+        //public ICommand DateTimeRangeCommand => _dateTimeRangeCommand;
+        //public ICommand SetRangeCommand => _setRangeCommand;
+        //private DateTime _startDateTime;
+        //private DateTime _endDateTime;
 
-        void SetDateTimeRange()
-        {
-            IsPopupOpen = false;
-            Debug.Assert(DateTimeRangePicker.Start <= DateTimeRangePicker.End, 
-                "Start Date Time is greater than End DateTime" );
-            if (DateTimeRangePicker.Start != _startDateTime || 
-                DateTimeRangePicker.End != _endDateTime)
-            {
-                _startDateTime = DateTimeRangePicker.Start;
-                _endDateTime = DateTimeRangePicker.End;
-                DateTimeRange = _startDateTime.ToString() + " -- "
-                    + (_endDateTime > DateTime.Now.AddMinutes(5) ? "Present" : _endDateTime.ToString());
-                NotifyFilterChanged();
-            }
+        //void SetDateTimeRange()
+        //{
+        //    IsPopupOpen = false;
+        //    Debug.Assert(DateTimeRangePicker.Start <= DateTimeRangePicker.End, 
+        //        "Start Date Time is greater than End DateTime" );
+        //    if (DateTimeRangePicker.Start != _startDateTime || 
+        //        DateTimeRangePicker.End != _endDateTime)
+        //    {
+        //        _startDateTime = DateTimeRangePicker.Start;
+        //        _endDateTime = DateTimeRangePicker.End;
+        //        DateTimeRange = _startDateTime.ToString() + " -- "
+        //            + (_endDateTime > DateTime.Now.AddMinutes(5) ? "Present" : _endDateTime.ToString());
+        //        NotifyFilterChanged();
+        //    }
 
-        }
+        //}
 
-        public string DateTimeRange
-        {
-            get
-            {
-                return _dateTimeRange;
-            }
+        //public string DateTimeRange
+        //{
+        //    get
+        //    {
+        //        return _dateTimeRange;
+        //    }
 
-            private set
-            {
-                SetValueAndRaise(ref _dateTimeRange, value);
-            }
-        }
+        //    private set
+        //    {
+        //        SetValueAndRaise(ref _dateTimeRange, value);
+        //    }
+        //}
 
-        public bool IsPopupOpen
-        {
-            get
-            {
-                return _isPopupOpen;
-            }
+        //public bool IsPopupOpen
+        //{
+        //    get
+        //    {
+        //        return _isPopupOpen;
+        //    }
 
-            set
-            {
-                SetValueAndRaise(ref _isPopupOpen, value);
-            }
-        }
+        //    set
+        //    {
+        //        SetValueAndRaise(ref _isPopupOpen, value);
+        //    }
+        //}
 
-        public DateTimeRangeModelView DateTimeRangePicker => _dateTimeRangePicker;
+        //public DateTimeRangeModelView DateTimeRangePicker => _dateTimeRangePicker;
 
 
         #endregion
 
+        public LogDateTimePickerViewModel DateTimePickerViewModel { get; }
     }
 
 }
