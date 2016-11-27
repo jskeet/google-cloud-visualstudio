@@ -330,7 +330,9 @@
                   MouseMove="dg_MouseMove"
                   >
             <!--  AlternatingRowBackground="AliceBlue" -->
-
+            <!--<DataGrid.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="DarkGray"/>
+            </DataGrid.Resources>-->
             <!--<DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
                    Color="#FF0000"/>

@@ -118,15 +118,30 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
         }
 
+        private DataGridRow preSelected;
+        private int preSelectedRowInex;
+
         private void dg_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
+
+            if (dg.SelectedIndex >= 0)
+            { 
+                DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
+                preSelected = row;
+                preSelectedRowInex = dg.SelectedIndex;
+            }
             //if (row != null)
             //{
             //    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
             //}
 
-            Debug.WriteLine("dg_selectionchanged unselected all");
+            Debug.WriteLine($"dg_selectionchanged {dg.SelectedIndex}");
+            //SelectedRow()?.InvalidateVisual();
+
+            // This is necessary to fix:
+            // By default DataGrid opens detail view on selected row. 
+            // It automatically opens detail view on mouse move
+            Debug.WriteLine($"dg_selectionchanged UnselectAll");
             dg.UnselectAll();
         }
 
@@ -233,6 +248,30 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             border.Background = new SolidColorBrush(Colors.White);
         }
 
+        private DataGridRow SelectedRow()
+        {
+            return (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
+        }
+
+        private DataGridRow previousHighlighted;
+
+        private DataGridRow MouseOverRow(MouseEventArgs e)
+        {
+            // Use HitTest to resolve the row under the cursor
+            var ele = dg.InputHitTest(e.GetPosition(null));
+            Debug.WriteLine($"InputHitTest element {ele?.GetType()}");
+            return ele as DataGridRow;
+
+            //// If there was no DataGridViewRow under the cursor, return
+            //if (rowIndex == -1) { return; }
+
+            //// Clear all other selections before making a new selection
+            //dgv.ClearSelection();
+
+            //// Select the found DataGridViewRow
+            //dgv.Rows[rowIndex].Selected = true;
+        }
+
         /// <summary>
         /// Somehow this is neccessary to change the seleted item
         /// Otherwise the "SelectedItem" become white blank.
@@ -243,6 +282,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             //Debug.WriteLine("dg_MouseMove Unselected All");
             //dg.UnselectAll();
+
+            // MouseOverRow(e);
 
             if (true)
             {
@@ -271,10 +312,24 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 if (row != null)
                 {
                     int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
-                    Debug.WriteLine($"Set Selected to row {rowIndex} ");
+                    Debug.WriteLine($"Set Selected to row {rowIndex}, previous selected {dg.SelectedIndex} ");
+                    if (previousHighlighted != row)
+                    {
+                        previousHighlighted?.InvalidateVisual();
+                        previousHighlighted = row;
+                    }
+                    
+                    if (preSelected != row)
+                    {
+                        Debug.WriteLine($"pre selected row {preSelectedRowInex} {preSelected}");
+                        preSelected?.InvalidateVisual();
+                        preSelected?.InvalidateMeasure();
+                    }
+
+                    //var preSelectedRow = SelectedRow();
                     object item = dg.Items[rowIndex];
                     dg.SelectedItem = item;
-                    //row.InvalidateVisual();
+                    //preSelectedRow?.InvalidateVisual();
 
                     //dg.ScrollIntoView(item);
                     //row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));

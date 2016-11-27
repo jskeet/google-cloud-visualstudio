@@ -420,9 +420,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
 
             string filter = $"resource.type=\"{resourceDescriptor.Type}\"";
+            var reqParams = new LogEntryRequestParams() { Filter = filter, PageSize = 1 };
             try
             {
-                var result =  await _dataSource.Value.GetLogEntryListAsync(filter, pageSize:1);
+                var result =  await _dataSource.Value.GetLogEntryListAsync(reqParams);
                 return result?.Item1 != null && result.Item1.Count > 0;
             }
             catch (Exception ex)
@@ -474,11 +475,20 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             return string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
         }
 
+        private LogEntryRequestParams CurrentRequestParameters()
+        {
+            LogEntryRequestParams reqParams = new LogEntryRequestParams();
+            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+            reqParams.Filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
+            reqParams.OrderBy = 
+                FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
+            return reqParams;
+        }
+
         private async void Reload()
         {
             await LogLoaddingWrapper(async () => {
-                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentFilter(), 
-                    descending:FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
+                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentRequestParameters());
                 LogEntriesViewModel.SetLogs(result?.Item1);
                 _nextPageToken = result?.Item2;
                 _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
@@ -501,7 +511,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             await LogLoaddingWrapper(async () =>
             {
-                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(_nextPageToken, CurrentFilter());
+                var reqParams = CurrentRequestParameters();
+                reqParams.PageToken = _nextPageToken;
+                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams);
                 LogEntriesViewModel.AddLogs(results?.Item1);
                 FilterViewModel.UpdateFilterWithLogEntries(results?.Item1);
             });

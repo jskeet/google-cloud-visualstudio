@@ -24,42 +24,41 @@ using System.Threading.Tasks;
 namespace GoogleCloudExtension.DataSources
 {
     /// <summary>
+    /// LogEntry List request parameters.
+    /// </summary>
+    public class LogEntryRequestParams
+    {
+        /// <summary>
+        /// Required for requesting next page of log entries. 
+        /// Not used for requesting first page of log entries.
+        /// </summary>
+        public string PageToken;
+
+        /// <summary>
+        /// Optional
+        /// Refert to https://cloud.google.com/logging/docs/view/advanced_filters. 
+        /// </summary>
+        public string Filter;
+
+        /// <summary>
+        /// Optional
+        /// If page size is not specified, a server side default value is used. 
+        /// </summary>
+        public int? PageSize;
+
+        /// <summary>
+        /// Optional "timestamp desc" or "timestamp asc"
+        /// </summary>
+        public string OrderBy;
+    }
+
+    /// <summary>
     /// Data source that returns data from Stackdriver Logging API.
     /// The API is described at https://cloud.google.com/logging/docs/api/reference/rest
     /// </summary>
     public class LoggingDataSource : DataSourceBase<LoggingService>
     {
-        /// <summary>
-        /// LogEntry List request parameters.
-        /// </summary>
-        private class LogEntryRequestParams
-        {
-            /// <summary>
-            /// Optional        
-            /// The PageToken for requesting next page of log entries.
-            /// </summary>
-            public string PageToken;
-
-            /// <summary>
-            /// Optional
-            /// Refert to https://cloud.google.com/logging/docs/view/advanced_filters. 
-            /// </summary>
-            public string Filter;
-
-            /// <summary>
-            /// Optional
-            /// If page size is not specified, a server side default value is used. 
-            /// </summary>
-            public int? PageSize;
-
-            /// <summary>
-            /// Optional "timestamp desc" or "timestamp asc"
-            /// </summary>
-            public string OrderBy;
-        }
-
-
-        /// <summary>
+         /// <summary>
         /// Initializes an instance of the data source.
         /// </summary>
         /// <param name="projectId">The Google Cloud Platform project id of the current user account .</param>
@@ -78,13 +77,9 @@ namespace GoogleCloudExtension.DataSources
         ///     A tuple of :   List of log entries,  optional next page token.
         /// </returns>
         public async Task<Tuple<IList<LogEntry>, string>> GetNextPageLogEntryListAsync(
-             string pageToken, string filter = null, int? pageSize = null)
+             LogEntryRequestParams requestParams)
         {
-            return await MakeAsyncRequest(new LogEntryRequestParams() {
-                Filter = filter,
-                PageToken = pageToken,
-                PageSize = pageSize
-            });
+            return await MakeAsyncRequest(requestParams);
         }
 
         /// <summary>
@@ -98,15 +93,9 @@ namespace GoogleCloudExtension.DataSources
         /// <returns>
         ///     A tuple of :   List of log entries,  optional next page token.
         /// </returns>
-        public async Task<Tuple<IList<LogEntry>, string>> GetLogEntryListAsync(
-            string filter = null, bool descending=true, int? pageSize = null)
+        public async Task<Tuple<IList<LogEntry>, string>> GetLogEntryListAsync(LogEntryRequestParams requestParams)
         {
-            return await MakeAsyncRequest(new LogEntryRequestParams()
-            {
-                Filter = filter,
-                PageSize = pageSize,
-                OrderBy = descending ? "timestamp desc" : "timestamp asc"
-            });
+            return await MakeAsyncRequest(requestParams);
         }
 
         /// <summary>
