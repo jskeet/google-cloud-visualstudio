@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -50,6 +51,17 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 Mouse.Capture(null);
             }
+        }
+
+        private void ComboBox_Loaded(Object sender, RoutedEventArgs e)
+        {
+            var comboBox = sender as ComboBox;
+            var comboBoxTemplate = comboBox.Template;
+            var toggleButton = comboBoxTemplate.FindName("toggleButton", comboBox) as ToggleButton;
+            var toggleButtonTemplate = toggleButton.Template;
+            var border = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
+
+            border.Background = new SolidColorBrush(Colors.White);
         }
 
     }

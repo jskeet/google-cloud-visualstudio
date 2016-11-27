@@ -215,6 +215,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
         }
 
+        public event EventHandler MessageFilterChanged;
+
         /// <summary>
         /// Append a set of log entries.
         /// </summary>
@@ -297,6 +299,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                     // TODO: Add filter changed event handler
                     // So that LogsViewerViewModel can disable the next page button.
+                    MessageFilterChanged?.Invoke(this, new EventArgs());
                 }
             }
         }
@@ -339,6 +342,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             
             LogEntriesViewModel = new LogEntriesViewModel();
+            LogEntriesViewModel.MessageFilterChanged += (sender, e) => _loadNextPageCommand.CanExecuteCommand = false;
             FilterViewModel = new LogsFilterViewModel();
             FilterViewModel.FilterChanged += (sender, e) => Reload();
             LoadOnStartup();

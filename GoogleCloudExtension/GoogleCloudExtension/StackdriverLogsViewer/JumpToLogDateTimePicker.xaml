@@ -15,6 +15,7 @@
                    MaxDropDownHeight="500"
                    SelectedIndex="0"
                    IsDropDownOpen="{Binding Path=IsDropDownOpen}"
+                   Loaded="ComboBox_Loaded"
                    >
 
             <ComboBox.ItemContainerStyle>

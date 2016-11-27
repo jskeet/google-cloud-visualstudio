@@ -16,6 +16,7 @@ using GoogleCloudExtension.Utils;
 using Google.Apis.Logging.v2.Data;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -217,6 +218,17 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 refreshImage.Source = s_refreshMouseDownImage.Value;
             }
 
+        }
+
+        private void ComboBox_Loaded(Object sender, RoutedEventArgs e)
+        {
+            var comboBox = sender as ComboBox;
+            var comboBoxTemplate = comboBox.Template;
+            var toggleButton = comboBoxTemplate.FindName("toggleButton", comboBox) as ToggleButton;
+            var toggleButtonTemplate = toggleButton.Template;
+            var border = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
+
+            border.Background = new SolidColorBrush(Colors.White);
         }
 
         ////#region JsonView

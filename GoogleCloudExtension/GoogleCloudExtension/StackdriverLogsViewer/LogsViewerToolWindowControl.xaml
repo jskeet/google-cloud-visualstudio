@@ -17,8 +17,10 @@
              >
 
     <UserControl.Resources>
+
         <ResourceDictionary>
 
+            
             <BitmapImage x:Key="GoogleLogo" UriSource="logo_cloud_128.png" />
 
             <valueConverters:MethodToValueConverter x:Key="MethodToValueConverter"/>
@@ -131,7 +133,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="DataGridCell">
                             <Border  BorderThickness="0">
-                                <Border x:Name="border" >
+                                <Border x:Name="border" Padding="0, 2, 0, 2" >
                                     <ContentPresenter />
                                 </Border>
                             </Border>
@@ -170,9 +172,9 @@
             -->
             </Style>
 
+            <!--<Setter Property="Padding"  Value="0, 10, 0, 2"  />  Seems paddin is not changing anything-->
             <Style x:Key="rowStyle" TargetType="DataGridRow">
                 <Setter Property="TextBlock.TextWrapping" Value="NoWrap" />
-                <Setter Property="Padding"  Value="0, 1, 0, 1"  />
                 <Setter Property="Margin" Value="0, 0, 0, 1"/>
                 <Setter Property="BorderThickness" Value="0, 0, 0, 0"/>
                 <Setter Property="BorderBrush" Value="LightGray" />
@@ -187,6 +189,11 @@
     </UserControl.Resources>
 
     <Grid Background="White" >
+        <Grid.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -194,12 +201,17 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" Margin="2, 0, 0, 3" >
-            <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray">
+            <Border BorderThickness="0, 0, 0, 0" BorderBrush="LightGray">
             <Image Source="{Binding Path=LogoImage}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
             </Border>
-            <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray">
+            <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray" >
+                <Border.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="14" />
+                    </Style>
+                </Border.Resources>
                 <StackPanel Orientation="Horizontal" Margin="2, 3, 0, 5"  >
-                <TextBlock Text="Project  :" VerticalAlignment="Center"/>
+                    <TextBlock Text="Project  :" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
                 <TextBlock Text="Account  :" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
                 <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
@@ -210,12 +222,21 @@
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
             <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
             <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}"  
-                        Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Margin="2, 0, 0, 0"
+                        >
+                <StackPanel.Resources>
+                    <Style TargetType="ComboBox">
+                        <Setter Property="Background" Value="White" />
+                    </Style>
+                </StackPanel.Resources>
                 <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
                           ItemsSource="{Binding Path=ResourcesSelection}"
                           SelectedItem="{Binding Path=SelectedResource}"
-                          DisplayMemberPath="DisplayName" >
+                          DisplayMemberPath="DisplayName" 
+                          Loaded="ComboBox_Loaded"
+                          >
                     <ComboBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ComboBoxItem}">
                             <Setter Property="Background" Value="White" />
@@ -226,17 +247,19 @@
 
                 <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
-                          SelectedItem="{Binding Path=SelectedLogID}"                         
+                          SelectedItem="{Binding Path=SelectedLogID}"  
+                          Loaded="ComboBox_Loaded"
                           />
                 <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
+                          Loaded="ComboBox_Loaded"
                           />
                 <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" />
             </StackPanel>
             <Button x:Name="btnRefresh"                  
                     ToolTip="{Binding Path=RefreshCommandToolTip}"
-                    Command="{Binding Path=RefreshCommand}" Margin="0, 0, 16, 0" 
+                    Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0" 
                     PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
                     PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
                     MouseEnter="btnRefresh_MouseEnter"
@@ -272,7 +295,8 @@
                   BorderThickness="0, 1, 0, 0"
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
-                  PreviewMouseDown="dg_PreviewMouseDown"                                
+                  PreviewMouseDown="dg_PreviewMouseDown"      
+                  AlternatingRowBackground="AliceBlue" AlternationCount="2"
                   >
 
             <!--                   
@@ -419,9 +443,34 @@
                                 <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
                                 <TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
                                          Margin="50, 0, 0, 0" FontSize="14"
+                                         Padding="0, 1, 0, 1"
                                          Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
                                                 Mode=OneWayToSource,
-                                               RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  />
+                                               RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  >
+                                    <!-- Watermark background -->
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                                            <Style.Resources>
+                                                <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                                                    <VisualBrush.Visual>
+                                                        <Label Content="Search" Foreground="LightGray" />
+                                                    </VisualBrush.Visual>
+                                                </VisualBrush>
+                                            </Style.Resources>
+                                            <Style.Triggers>
+                                                <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="Text" Value="{x:Null}">
+                                                    <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                    <Setter Property="Background" Value="White" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
