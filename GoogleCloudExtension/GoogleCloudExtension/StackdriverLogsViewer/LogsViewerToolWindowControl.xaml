@@ -137,12 +137,12 @@
                                     <ContentPresenter />
                                 </Border>
                             </Border>
-                            <!-- Use Row MouseOver trigger   <ControlTemplate.Triggers>  
+                               <!--<ControlTemplate.Triggers>  
                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="Orange"/>
+                                    <Setter TargetName="border" Property="Background" Value="#F2A600"/>
                                 </DataTrigger>
                                 <Trigger Property="IsMouseOver" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="Orange"/>
+                                    <Setter TargetName="border" Property="Background" Value="#F2A600"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>-->
                         </ControlTemplate>
@@ -203,6 +203,8 @@
 
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="#F2A600" />
+                        <Setter Property="Foreground" Value="Black" />
+                        <!--<Setter Property="IsSelected" Value="True" />-->
                     </Trigger>
                 </Style.Triggers>
                 <!--
@@ -324,7 +326,6 @@
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
                   PreviewMouseDown="dg_PreviewMouseDown"      
-                  
                   AlternationCount="2"
                   MouseMove="dg_MouseMove"
                   >

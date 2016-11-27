@@ -126,6 +126,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             //    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
             //}
 
+            Debug.WriteLine("dg_selectionchanged unselected all");
             dg.UnselectAll();
         }
 
@@ -240,38 +241,44 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         /// <param name="e"></param>
         private void dg_MouseMove(object sender, MouseEventArgs e)
         {
-            DependencyObject dep = (DependencyObject)e.OriginalSource;
+            //Debug.WriteLine("dg_MouseMove Unselected All");
+            //dg.UnselectAll();
 
-            // iteratively traverse the visual tree
-            while ((dep != null) && !(dep is DataGridCell))
+            if (true)
             {
-                dep = VisualTreeHelper.GetParent(dep);
-            }
+                DependencyObject dep = (DependencyObject)e.OriginalSource;
 
-            if (dep == null)
-                return;
+                // iteratively traverse the visual tree
+                while ((dep != null) && !(dep is DataGridCell))
+                {
+                    dep = VisualTreeHelper.GetParent(dep);
+                }
+
+                if (dep == null)
+                    return;
 
 
-            DataGridCell cell = dep as DataGridCell;
-            // do something
+                DataGridCell cell = dep as DataGridCell;
+                // do something
 
-            // navigate further up the tree
-            while ((dep != null) && !(dep is DataGridRow))
-            {
-                dep = VisualTreeHelper.GetParent(dep);
-            }
+                // navigate further up the tree
+                while ((dep != null) && !(dep is DataGridRow))
+                {
+                    dep = VisualTreeHelper.GetParent(dep);
+                }
 
-            DataGridRow row = dep as DataGridRow;
-            if (row != null)
-            {
-                int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
-                Debug.WriteLine($"Set Selected to row {rowIndex} ");
-                object item = dg.Items[rowIndex];
-                dg.SelectedItem = item;
-                row.InvalidateVisual();
+                DataGridRow row = dep as DataGridRow;
+                if (row != null)
+                {
+                    int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
+                    Debug.WriteLine($"Set Selected to row {rowIndex} ");
+                    object item = dg.Items[rowIndex];
+                    dg.SelectedItem = item;
+                    //row.InvalidateVisual();
 
-                //dg.ScrollIntoView(item);
-                //row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    //dg.ScrollIntoView(item);
+                    //row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                }
             }
         }
     
