@@ -137,15 +137,19 @@
                                     <ContentPresenter />
                                 </Border>
                             </Border>
-                            <ControlTemplate.Triggers>
+                            <!-- Use Row MouseOver trigger   <ControlTemplate.Triggers>  
                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="true">
                                     <Setter TargetName="border" Property="Background" Value="Orange"/>
                                 </DataTrigger>
-                            </ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="Orange"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>-->
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <!--
+            </Style>
+            <!--
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="2" />
             <Setter Property="Background" Value="Black" />
@@ -170,7 +174,19 @@
                 </Setter.Value>
             </Setter>
             -->
-            </Style>
+
+
+            <!--<DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver"
+                           Value="True">
+                            <Setter Property="Background"
+                               Value="Green" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>-->
 
             <!--<Setter Property="Padding"  Value="0, 10, 0, 2"  />  Seems paddin is not changing anything-->
             <Style x:Key="rowStyle" TargetType="DataGridRow">
@@ -179,11 +195,23 @@
                 <Setter Property="BorderThickness" Value="0, 0, 0, 0"/>
                 <Setter Property="BorderBrush" Value="LightGray" />
                 <Setter Property="Background" Value="#FFFDFDFD" />
+                <Style.Triggers>
+                    <!-- http://stackoverflow.com/questions/3614837/wpf-style-trigger-for-datagridrow-background-color-trumped-by-alternatingrowback -->
+                    <Trigger Property="AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="AliceBlue"/>
+                    </Trigger>
+
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F2A600" />
+                    </Trigger>
+                </Style.Triggers>
                 <!--
             <Setter Property="Background" Value="Black" /> 
             -->
             </Style>
-
+            <!--<Style TargetType="{x:Type DataGrid}">
+                <Setter Property="AlternatingRowBackground" Value="{DynamicResource AlternatingRow}"/>
+            </Style>-->
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -296,8 +324,16 @@
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
                   PreviewMouseDown="dg_PreviewMouseDown"      
-                  AlternatingRowBackground="AliceBlue" AlternationCount="2"
+                  
+                  AlternationCount="2"
+                  MouseMove="dg_MouseMove"
                   >
+            <!--  AlternatingRowBackground="AliceBlue" -->
+
+            <!--<DataGrid.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
+                   Color="#FF0000"/>
+            </DataGrid.Resources>-->
 
             <!--                   
                 AreRowDetailsFrozen="True" 
@@ -482,7 +518,7 @@
                 <DataTemplate>
                     <!-- Is Border necessary ?  Leave it for now
                     -->
-                    <Border BorderThickness="0" Background="White" Padding="0" Margin="30, 0 , 0 , 0" >
+                    <Border BorderThickness="0" Background="White" Padding="30, 0, 0 , 0" Margin="0" >
                         <TreeView Name="ResultTreeView" BorderThickness="0" 
                                   ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
                                   ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}"   

@@ -22,6 +22,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.ComponentModel;
 using System;
+using System.Diagnostics;
 
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
@@ -230,6 +231,50 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             border.Background = new SolidColorBrush(Colors.White);
         }
+
+        /// <summary>
+        /// Somehow this is neccessary to change the seleted item
+        /// Otherwise the "SelectedItem" become white blank.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void dg_MouseMove(object sender, MouseEventArgs e)
+        {
+            DependencyObject dep = (DependencyObject)e.OriginalSource;
+
+            // iteratively traverse the visual tree
+            while ((dep != null) && !(dep is DataGridCell))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep == null)
+                return;
+
+
+            DataGridCell cell = dep as DataGridCell;
+            // do something
+
+            // navigate further up the tree
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            DataGridRow row = dep as DataGridRow;
+            if (row != null)
+            {
+                int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
+                Debug.WriteLine($"Set Selected to row {rowIndex} ");
+                object item = dg.Items[rowIndex];
+                dg.SelectedItem = item;
+                row.InvalidateVisual();
+
+                //dg.ScrollIntoView(item);
+                //row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            }
+        }
+    
 
         ////#region JsonView
         ////private void JValue_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
