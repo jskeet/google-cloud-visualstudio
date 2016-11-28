@@ -16,17 +16,19 @@ using Google.Apis.Logging.v2.Data;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System;
-using System.Threading.Tasks;
 
-using System.Diagnostics;
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -73,7 +75,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
         
         public string Date => _timestamp.ToShortDateString();
-        public string Time => _timestamp.ToLongTimeString();
+        public DateTime Time => _timestamp;
         public LogEntry Entry { get; private set; }
 
         private string ComposePayloadMessage(IDictionary<string, object> dictPayload)
@@ -84,7 +86,13 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 return string.Empty;
             }
 
-            return string.Join(";", dictPayload.Values).Replace(Environment.NewLine, " ");
+            StringBuilder text = new StringBuilder();
+            foreach (var kv in dictPayload)
+            {
+                text.Append($"{{kv.Key}: {kv.Value}}  ");
+            }
+
+            return text.ToString().Replace(Environment.NewLine, "  ");
         }
 
         private string ComposeMessage()
@@ -181,6 +189,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     _timestamp = DateTime.MaxValue;
                 }
             }
+
+            _timestamp = _timestamp.ToLocalTime();
         }
 
     }
@@ -236,13 +246,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             RaisePropertyChanged(nameof(LogEntryList));
         }
 
+        private bool descendingOrder;
+
         /// <summary>
         /// Replace the current log entries with the new set.
         /// </summary>
-        public void SetLogs(IList<LogEntry> logEntries)
+        /// <param name="logEntries">The log entries list.</param>
+        /// <param name="descending">True: Descending order by TimeStamp, False: Ascending order by TimeStamp </param>
+        public void SetLogs(IList<LogEntry> logEntries, bool descending)
         {
+            descendingOrder = descending;
             _logs.Clear();
             _collectionView = new ListCollectionView(new List<LogItem>());
+
             if (logEntries == null)
             {
                 RaisePropertyChanged(nameof(LogEntryList));
@@ -258,7 +274,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 lock (_collectionViewLock)
                 {
-                    _collectionView = new ListCollectionView(_logs);
+                    var sorted = descendingOrder ? _logs.OrderByDescending(x => x.Time) : _logs.OrderBy(x => x.Time);
+                    var sorted_collection = new ObservableCollection<LogItem>(sorted);                    
+                    _collectionView = new ListCollectionView(sorted_collection);
                     _collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
                     return _collectionView;
                 }
@@ -489,15 +507,18 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             await LogLoaddingWrapper(async () => {
                 var result = await _dataSource.Value.GetLogEntryListAsync(CurrentRequestParameters());
-                LogEntriesViewModel.SetLogs(result?.Item1);
                 _nextPageToken = result?.Item2;
                 _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
-                FilterViewModel.UpdateFilterWithLogEntries(result?.Item1);
+                var logs = result?.Item1;
+                LogEntriesViewModel.SetLogs(result?.Item1, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
+                FilterViewModel.UpdateFilterWithLogEntries(logs);
             });
         }
 
         private void OnRefreshCommand()
         {
+            FilterViewModel.DateTimePickerViewModel.IsDecendingOrder = true;
+            FilterViewModel.DateTimePickerViewModel.FilterDateTime = DateTime.MaxValue;
             Reload();
         }
 

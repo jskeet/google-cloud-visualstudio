@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:viewer="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer"
              xmlns:jlinq="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json"
             xmlns:templateSelectors="clr-namespace:JsonViewerDemo.TemplateSelectors"
@@ -430,7 +431,7 @@
                 <!--<DataGridTextColumn Binding="{Binding SeverityLevel}"  >
                 </DataGridTextColumn>-->
 
-
+                <!-- Log Level -->
                 <DataGridTemplateColumn IsReadOnly="True">
                     <DataGridTemplateColumn.Header>
                         <!--<TextBlock >a</TextBlock>-->
@@ -460,7 +461,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 
-                <DataGridTextColumn Binding="{Binding Time}" />
+                <DataGridTextColumn Binding="{Binding Time,StringFormat='T'}" />
                 <!--Header="Time">-->
                 <!--DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>

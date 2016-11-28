@@ -153,7 +153,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                 if (DateTimePickerViewModel.IsDecendingOrder)
                 {
-                    filter.AppendLine($"timestamp<=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
+                    if (DateTimePickerViewModel.FilterDateTime < DateTime.Now)
+                    {
+                        filter.AppendLine($"timestamp<=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
+                    }
                 }
                 else
                 {

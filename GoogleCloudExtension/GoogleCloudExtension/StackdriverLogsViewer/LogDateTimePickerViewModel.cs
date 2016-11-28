@@ -156,6 +156,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
+                if (_date > DateTime.Now)
+                {
+                    _date = DateTime.Now.Date;
+                }
+                
                 return _date.Date;
             }
 
@@ -174,6 +179,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
+                if (_date > DateTime.Now)
+                {
+                    return "Present";
+                }
+
                 return _date.ToString("t");
             }
 
