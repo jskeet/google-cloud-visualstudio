@@ -89,7 +89,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             StringBuilder text = new StringBuilder();
             foreach (var kv in dictPayload)
             {
-                text.Append($"{{kv.Key}: {kv.Value}}  ");
+                text.Append($"{kv.Key}: {kv.Value}  ");
             }
 
             return text.ToString().Replace(Environment.NewLine, "  ");
