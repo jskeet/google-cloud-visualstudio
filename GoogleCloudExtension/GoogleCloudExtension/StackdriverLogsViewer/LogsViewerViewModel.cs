@@ -368,7 +368,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private async void LoadOnStartup()
         {
-            FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorAsync();
+            FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
             Reload();
             FilterOutResource();
         }
@@ -442,7 +442,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             try
             {
                 var result =  await _dataSource.Value.GetLogEntryListAsync(reqParams);
-                return result?.Item1 != null && result.Item1.Count > 0;
+                return result?.LogEntries != null && result.LogEntries.Count > 0;
             }
             catch (Exception ex)
             {
@@ -507,10 +507,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             await LogLoaddingWrapper(async () => {
                 var result = await _dataSource.Value.GetLogEntryListAsync(CurrentRequestParameters());
-                _nextPageToken = result?.Item2;
+                _nextPageToken = result?.NextPageToken;
                 _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
-                var logs = result?.Item1;
-                LogEntriesViewModel.SetLogs(result?.Item1, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
+                var logs = result?.LogEntries;
+                LogEntriesViewModel.SetLogs(result?.LogEntries, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
                 FilterViewModel.UpdateFilterWithLogEntries(logs);
             });
         }
@@ -533,12 +533,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             await LogLoaddingWrapper(async () =>
             {
                 var reqParams = CurrentRequestParameters();
-                reqParams.PageToken = _nextPageToken;
-                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams);
-                LogEntriesViewModel.AddLogs(results?.Item1);
-                _nextPageToken = results.Item2;
+                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams, _nextPageToken);
+                LogEntriesViewModel.AddLogs(results?.LogEntries);
+                _nextPageToken = results.NextPageToken;
                 _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
-                FilterViewModel.UpdateFilterWithLogEntries(results?.Item1);
+                FilterViewModel.UpdateFilterWithLogEntries(results?.LogEntries);
             });
         }
 
