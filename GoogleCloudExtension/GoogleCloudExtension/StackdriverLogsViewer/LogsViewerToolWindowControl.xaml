@@ -13,7 +13,7 @@
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
-             d:DesignHeight="1024" d:DesignWidth="640"             
+             d:DesignHeight="1024" d:DesignWidth="860"             
              Name="LogsViewerToolWindow" 
              >
 
@@ -251,66 +251,116 @@
            </Border>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
-            <!-- IsSynchronizedWithCurrentItem="True"  ??? Do I need this ?-->
-            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}"  
+            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}" >
+
+            <!-- Two Filter Panels-->
+            <Grid >
+                <!-- Advanced Filter -->
+                <Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}" 
+                       Visibility="{Binding Path=AdvancedFilterVisibility}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox  Grid.Column="0"
+                         Margin="2, 0, 16, 0" VerticalAlignment="Center" Padding="2, 2, 2, 2"
+                         TextWrapping="Wrap" AcceptsReturn="True"
+                         Text="{Binding Path=AdvancedFilter}"
+                         />
+                        <Button  Grid.Column="1"
+                        Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
+                            Command="{Binding Path=AdvancedFilterHelpCommand}"
+                            BorderThickness="0"   Margin="0, 0, 16, 0"
+                            Content="?" />
+                </Grid>
+
+                <!-- Basic Filter -->
+                <StackPanel Orientation="Horizontal"  
                         Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Margin="2, 0, 0, 0"
+                        Margin="2, 0, 0, 0" x:Name="BasicFilters"
+                        Visibility="{Binding Path=BasicFilterVisibility}"    
                         >
-                <StackPanel.Resources>
-                    <Style TargetType="ComboBox">
-                        <Setter Property="Background" Value="White" />
-                    </Style>
-                </StackPanel.Resources>
-                <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
+                    <StackPanel.Resources>
+                        <Style TargetType="ComboBox">
+                            <Setter Property="Background" Value="White" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
                           ItemsSource="{Binding Path=ResourcesSelection}"
-                          SelectedItem="{Binding Path=SelectedResource}"
+                          SelectedItem="{Binding Path=SelectedResource,Mode=TwoWay}"
                           DisplayMemberPath="DisplayName" 
                           Loaded="ComboBox_Loaded"
                           >
-                    <ComboBox.ItemContainerStyle>
-                        <Style TargetType="{x:Type ComboBoxItem}">
-                            <Setter Property="Background" Value="White" />
-                        </Style>
-                    </ComboBox.ItemContainerStyle>
-                </ComboBox>
-                        
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ComboBoxItem}">
+                                <Setter Property="Background" Value="White" />
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
 
-                <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
+
+                    <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
                           SelectedItem="{Binding Path=SelectedLogID}"  
                           Loaded="ComboBox_Loaded"
                           />
-                <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
+                    <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           Loaded="ComboBox_Loaded"
                           />
-                <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" />
-            </StackPanel>
-            <Button x:Name="btnRefresh"                  
-                    ToolTip="{Binding Path=RefreshCommandToolTip}"
-                    Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0" 
-                    PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
-                    PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
-                    MouseEnter="btnRefresh_MouseEnter"
-                    MouseLeave="btnRefresh_MouseLeave"
-                    >
-                <Button.Style>
-                    <Style  TargetType="Button">
-                        <Setter Property="OverridesDefaultStyle" Value="True"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <ContentPresenter></ContentPresenter>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
-                <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
-            </Button>
+                    <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" 
+                                                Margin="0, 0, 16, 0"/>
+
+                </StackPanel>
+            </Grid>
+
+                <ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
+                               VerticalAlignment="Center" 
+                          IsDropDownOpen="{Binding Path=IsSwitchFilterDropDownOpen}"
+                          BorderThickness="0"
+                          Background="White" Loaded="ComboBox_Loaded"
+                          >
+                    <ComboBoxItem x:Name="FirstItem" HorizontalAlignment="Center"  Content="" >
+                        <ComboBoxItem.Template>
+                            <ControlTemplate>
+                                <Button Content="{Binding Path=FilterSwitchButtonContent}"
+                                    Command="{Binding Path=FilterSwitchCommand}"
+                                        Padding="3" BorderThickness="0"
+                                        Background="White"
+                                    />
+                            </ControlTemplate>
+                        </ComboBoxItem.Template>
+                    </ComboBoxItem>
+                </ComboBox>
         </StackPanel>
+        <Button x:Name="btnRefresh"
+                        ToolTip="{Binding Path=RefreshCommandToolTip}"
+                        Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0"
+                        PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
+                        PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
+                        MouseEnter="btnRefresh_MouseEnter"
+                        MouseLeave="btnRefresh_MouseLeave"
+                        VerticalAlignment="Center"
+                        >
+                    <Button.Style>
+                        <Style  TargetType="Button">
+                            <Setter Property="OverridesDefaultStyle" Value="True"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <ContentPresenter></ContentPresenter>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
+                </Button>
+        </StackPanel>
+            
         <DataGrid Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 20" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"

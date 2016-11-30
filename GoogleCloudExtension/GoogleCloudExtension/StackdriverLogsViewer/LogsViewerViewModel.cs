@@ -381,7 +381,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
             set
             {
-                SetValueAndRaise(ref _expandAll, value);
+                SetValueAndRaise(ref _expandAll, value);    
             }
         } 
 

@@ -115,6 +115,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             DateTimePickerViewModel.DateTimeFilterChange += (sender, e) => {
                 NotifyFilterChanged();
             };
+
+            _filterSwitchCommand = new ProtectedCommand(SwapFilter);
+            _advanceFilterHelpCommand = new ProtectedCommand(ShowAdvancedFilterHelp);
         }
 
         public ImageSource ToggleButtonImage => s_toggleButton.Value;
@@ -256,7 +259,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 if (value != null && _selectedResource != value)
                 {
-                    _selectedResource = value;
+                    SetValueAndRaise(ref _selectedResource, value);
                     ResetLogIDs();
                     try
                     {
@@ -282,6 +285,36 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 _resourceDescriptors = value;
                 RaisePropertyChanged(nameof(ResourcesSelection));
                 RaisePropertyChanged(nameof(SelectedResource));
+
+                if (_selectedResource != null)
+                {
+                    bool selectedFilteredOut = true;
+                    foreach (var descriptor in _resourceDescriptors)
+                    {
+                        if (descriptor.Name == _selectedResource.Name)
+                        {
+                            selectedFilteredOut = false;
+                            break;
+                        }
+                    }
+
+                    if (selectedFilteredOut)
+                    {
+                        _selectedResource = null;
+                    }
+                }
+
+                if (_selectedResource == null)
+                {
+                    foreach (var descriptor in _resourceDescriptors)
+                    {
+                        if (descriptor.DisplayName == "Global")
+                        {
+                            SelectedResource = descriptor;
+                            return;
+                        }
+                    }
+                }
             }
         }
 
@@ -412,6 +445,95 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
 
         public LogDateTimePickerViewModel DateTimePickerViewModel { get; }
+
+        #region Advanced Filter
+        private bool _showBasicFilter = true;
+        private ProtectedCommand _filterSwitchCommand;
+        private ProtectedCommand _advanceFilterHelpCommand;
+
+        private void ShowAdvancedFilterHelp()
+        {
+            Process.Start(new ProcessStartInfo("https://cloud.google.com/logging/docs/view/advanced_filters"));
+        }
+
+        private void SwapFilter()
+        {
+
+
+            IsSwitchFilterDropDownOpen = false;
+            _showBasicFilter = !_showBasicFilter;
+            if (_showBasicFilter)
+            {
+                AdvancedFilter = string.Empty;
+            }
+            else
+            {
+                AdvancedFilter = Filter;
+            }
+
+            RaisePropertyChanged(nameof(BasicFilterVisibility));
+            RaisePropertyChanged(nameof(AdvancedFilterVisibility));
+            RaisePropertyChanged(nameof(FilterSwitchButtonContent));
+        }
+
+        private string _advacedFilter;
+        public string AdvancedFilter
+        {
+            get
+            {
+                return _advacedFilter;
+            }
+
+            set
+            {
+                SetValueAndRaise(ref _advacedFilter, value);
+            }
+        }
+
+        private bool _IsDropdownOpen = false;
+        public bool IsSwitchFilterDropDownOpen {
+            get
+            {
+                Debug.WriteLine($"get IsSwitchFilterDropDownOpen {_IsDropdownOpen}");
+                return _IsDropdownOpen;
+            }
+
+            set
+            {
+                SetValueAndRaise(ref _IsDropdownOpen, value);
+            }
+        }
+
+        public ICommand FilterSwitchCommand => _filterSwitchCommand;
+
+        public string FilterSwitchButtonContent
+        {
+            get
+            {
+                return _showBasicFilter ? "Convert to advanced filter" : "Clear and return to basic filter";
+            }
+        }
+
+        public string AdvancedFilterHelpMessage => "Click to show advanced filter syntax help.";
+
+        public ICommand AdvancedFilterHelpCommand => _advanceFilterHelpCommand;
+
+        public Visibility BasicFilterVisibility
+        {
+            get
+            {
+                return _showBasicFilter ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
+
+        public Visibility AdvancedFilterVisibility
+        {
+            get
+            {
+                return _showBasicFilter ? Visibility.Hidden : Visibility.Visible;
+            }
+        }
+        #endregion
     }
 
 }
