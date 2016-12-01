@@ -6,10 +6,16 @@
              xmlns:local="clr-namespace:GoogleCloudExtension.StackdriverLogsViewer"
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="200">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Theming/CommonResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <ComboBox  x:Name="comboPickTime"
                     HorizontalAlignment="Center" 
-                           Width="190"
                            VerticalAlignment="Center"
                    HorizontalContentAlignment="Center"
                    MaxDropDownHeight="500"
@@ -33,7 +39,7 @@
             <ComboBoxItem x:Name="FirstItem" HorizontalAlignment="Center"  Content="{Binding Path=ComboBoxText}" >
                 <ComboBoxItem.Template>
                     <ControlTemplate>
-                        <Button Width="188"  BorderThickness="0"
+                        <Button   BorderThickness="0"
                                 Background="Transparent" >
                             <!--PreviewMouseDown="Border_PreviewMouseDown"
                                 PreviewMouseLeftButtonDown="Border_PreviewMouseLeftButtonDown"
@@ -73,6 +79,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Button Content="{Binding Name}" 
+                                                        Style="{StaticResource CommonButtonStandardStyle}"                                                        
                                                          Command="{Binding SetTimeSpan}"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -119,11 +126,13 @@
                                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="3, 1, 0, 3">
                                         <!--Click="OK_Button_Click"-->
                                         <Button Content="Go" HorizontalAlignment="Left" 
-                                               
+                                            Style="{StaticResource CommonButtonStandardStyle}"    
                                             Command="{Binding Path=OKCommand}"
                                             Width="35"
                                             Margin="2, 0, 10, 0"/>
-                                    <Button Content="Cancel" HorizontalAlignment="Left" Click="Cancel_Button_Click" />
+                                    <Button Content="Cancel" HorizontalAlignment="Left" Click="Cancel_Button_Click"
+                                            Style="{StaticResource CommonButtonStandardStyle}" 
+                                            />
                                 </StackPanel>
                             </StackPanel>
                             </StackPanel>

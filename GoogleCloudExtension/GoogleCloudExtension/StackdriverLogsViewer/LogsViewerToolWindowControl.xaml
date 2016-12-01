@@ -20,8 +20,10 @@
     <UserControl.Resources>
 
         <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="../Theming/CommonResources.xaml" />
+                </ResourceDictionary.MergedDictionaries>
 
-            
             <BitmapImage x:Key="GoogleLogo" UriSource="logo_cloud_128.png" />
 
             <valueConverters:MethodToValueConverter x:Key="MethodToValueConverter"/>
@@ -216,6 +218,21 @@
                 <Setter Property="AlternatingRowBackground" Value="{DynamicResource AlternatingRow}"/>
             </Style>-->
 
+            <ControlTemplate x:Key="FilterSwitchButton" TargetType="{x:Type Button}">
+                <Button Grid.Column="1" HorizontalAlignment="Left"
+                    ToolTip="{Binding Path=FilterSwitchButtonContent}"
+                                    Command="{Binding Path=FilterSwitchCommand}"
+                                        Padding="3" BorderThickness="0"
+                                        Background="White"
+                        VerticalAlignment="Bottom"
+                        Margin="5, 0, 30, 0"
+                                    >
+                    <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
+                                    Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+            </ControlTemplate>
+            
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -250,33 +267,48 @@
             </StackPanel>
            </Border>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0, 0, 0, 5" >
-            <StackPanel Orientation="Horizontal" DataContext="{Binding Path=FilterViewModel}" >
 
-            <!-- Two Filter Panels-->
-            <Grid >
-                <!-- Advanced Filter -->
-                <Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}" 
+        <Grid Grid.Row="1" Margin="0, 0, 0, 5"  DataContext="{Binding Path=FilterViewModel}"
+              VerticalAlignment="Center"
+                HorizontalAlignment="Left"
+              >
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            
+                    <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
+                    <!-- Advanced Filter -->                
+                <Grid   Grid.Column="0"
                        Visibility="{Binding Path=AdvancedFilterVisibility}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                     <TextBox  Grid.Column="0"
                          Margin="2, 0, 16, 0" VerticalAlignment="Center" Padding="2, 2, 2, 2"
                          TextWrapping="Wrap" AcceptsReturn="True"
                          Text="{Binding Path=AdvancedFilter}"
                          />
-                        <Button  Grid.Column="1"
-                        Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
+                                Margin="0, 0, 16, 0"
+                                VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                                Style="{StaticResource CommonButtonStandardStyle}"
+                                Content="Sumit Filter" />
+                        <Button  Grid.Column="2"
+                        Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                             ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
                             Command="{Binding Path=AdvancedFilterHelpCommand}"
                             BorderThickness="0"   Margin="0, 0, 16, 0"
                             Content="?" />
-                </Grid>
+                <Button Grid.Column="3" Template="{StaticResource FilterSwitchButton}" />
+            </Grid>
 
                 <!-- Basic Filter -->
-                <StackPanel Orientation="Horizontal"  
+            <StackPanel  Grid.Column="0" Orientation="Horizontal" 
                         Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"
                         Margin="2, 0, 0, 0" x:Name="BasicFilters"
                         Visibility="{Binding Path=BasicFilterVisibility}"    
@@ -292,6 +324,7 @@
                           SelectedItem="{Binding Path=SelectedResource,Mode=TwoWay}"
                           DisplayMemberPath="DisplayName" 
                           Loaded="ComboBox_Loaded"
+                              VerticalAlignment="Center"
                           >
                         <ComboBox.ItemContainerStyle>
                             <Style TargetType="{x:Type ComboBoxItem}">
@@ -305,19 +338,46 @@
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
                           SelectedItem="{Binding Path=SelectedLogID}"  
                           Loaded="ComboBox_Loaded"
+                              VerticalAlignment="Center"
                           />
                     <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           Loaded="ComboBox_Loaded"
+                              VerticalAlignment="Center"
                           />
                     <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" 
                                                 Margin="0, 0, 16, 0"/>
 
-                </StackPanel>
-            </Grid>
+                        <Button x:Name="btnRefresh"
+                        ToolTip="{Binding Path=RefreshCommandToolTip}"
+                        Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0"
+                        PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
+                        PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
+                        MouseEnter="btnRefresh_MouseEnter"
+                        MouseLeave="btnRefresh_MouseLeave"
+                        VerticalAlignment="Center"
+                        >
+                            <Button.Style>
+                                <Style  TargetType="Button">
+                                    <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <ContentPresenter></ContentPresenter>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
+                        </Button>
 
-                <ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
+                <Button Template="{StaticResource FilterSwitchButton}" />
+
+            </StackPanel>
+                
+                <!--<ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
                                VerticalAlignment="Center" 
                           IsDropDownOpen="{Binding Path=IsSwitchFilterDropDownOpen}"
                           BorderThickness="0"
@@ -334,35 +394,11 @@
                             </ControlTemplate>
                         </ComboBoxItem.Template>
                     </ComboBoxItem>
-                </ComboBox>
-        </StackPanel>
-        <Button x:Name="btnRefresh"
-                        ToolTip="{Binding Path=RefreshCommandToolTip}"
-                        Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0"
-                        PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
-                        PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
-                        MouseEnter="btnRefresh_MouseEnter"
-                        MouseLeave="btnRefresh_MouseLeave"
-                        VerticalAlignment="Center"
-                        >
-                    <Button.Style>
-                        <Style  TargetType="Button">
-                            <Setter Property="OverridesDefaultStyle" Value="True"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <ContentPresenter></ContentPresenter>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
-                </Button>
-        </StackPanel>
+                </ComboBox>-->
+        </Grid>
             
         <DataGrid Grid.Row="2"  x:Name="dg" 
-                   Padding="0,0, 0, 20" IsReadOnly="True"
+                   Padding="0,0, 0, 0" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
                   CanUserResizeRows="False"
                   RowDetailsVisibilityMode="{Binding Path=ToggleExpandHideAll,Mode=OneWay}"
@@ -379,7 +415,7 @@
                   PreviewMouseDown="dg_PreviewMouseDown"      
                   AlternationCount="2"
                   MouseMove="dg_MouseMove"
-                  >
+                 >
             <!--  AlternatingRowBackground="AliceBlue" -->
             <!--<DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="DarkGray"/>
@@ -506,14 +542,18 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="5, 1, 10, 1"/>
+                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="5, 1, 10, 1" 
+                                   ToolTip="{Binding Path=SeverityTip}"
+                                   />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                
-                <DataGridTextColumn Binding="{Binding Time,StringFormat='T'}" />
-                <!--Header="Time">-->
-                <!--DataGridTextColumn.HeaderTemplate>
+
+                <DataGridTextColumn Binding="{Binding Time,StringFormat='HH:mm:ss.fff'}" Width="100"/>
+
+                <!--<DataGridTemplateColumn >
+                    --><!--
+                    <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Content, RelativeSource=
@@ -521,7 +561,14 @@
                                 <TextBox x:Name="txtTime" Width="100" TextChanged="TextChanged"  />
                             </StackPanel>
                         </DataTemplate>
-                    </ -->                
+                    </DataGridTextColumn.HeaderTemplate>--><!--
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock  Text="{Binding Time,StringFormat='HH:mm:ss.fff'}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>-->
+                
                 
                 <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
@@ -611,9 +658,18 @@
 
         </DataGrid>
         <Grid Grid.Row="3" Background="LightSkyBlue">
-            <TextBlock Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Center" />
-            <Button HorizontalAlignment="Right" Margin="0, 5, 20, 5" Name="LoadMore" Content="Load More" 
-                    Command="{Binding Path=LoadNextPageCommand}" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition  Width="*"/>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Left"
+                       MaxHeight="120" Margin="2, 0, 0, 0"
+                       />
+            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="5, 5, 20, 5" Name="LoadMore" Content="Load More" 
+                    Command="{Binding Path=LoadNextPageCommand}"
+                    VerticalAlignment="Bottom"
+                    Style="{StaticResource CommonButtonStandardStyle}"
+                    />
         </Grid>
     </Grid>
 </UserControl>

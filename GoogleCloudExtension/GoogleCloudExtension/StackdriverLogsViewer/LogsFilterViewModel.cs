@@ -30,6 +30,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Linq;
 using System.Windows.Media;
+using System.Windows.Controls;
+
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -116,17 +118,52 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 NotifyFilterChanged();
             };
 
+            _submitAdvancedFilterComamnd = new ProtectedCommand(() =>
+            {
+                NotifyFilterChanged();
+            });
+
             _filterSwitchCommand = new ProtectedCommand(SwapFilter);
             _advanceFilterHelpCommand = new ProtectedCommand(ShowAdvancedFilterHelp);
+            _refreshCommand = new ProtectedCommand(OnRefreshCommand, canExecuteCommand: false);
         }
 
         public ImageSource ToggleButtonImage => s_toggleButton.Value;
+
+        #region Refresh Button
+        private ProtectedCommand _refreshCommand;
+        public ProtectedCommand RefreshCommand => _refreshCommand;
+        public string RefreshCommandToolTip => "Get newest log (descending order)";
+
+        private void OnRefreshCommand()
+        {
+            DateTimePickerViewModel.IsDecendingOrder = true;
+            DateTimePickerViewModel.FilterDateTime = DateTime.MaxValue;
+            NotifyFilterChanged();
+        }
+
+        #endregion
 
         #region Filter change 
         public event EventHandler FilterChanged;
         public void NotifyFilterChanged() => FilterChanged?.Invoke(this, new EventArgs());
 
         public string Filter
+        {
+            get
+            {
+                if (_showBasicFilter)
+                {
+                    return BasicFilter;
+                }
+                else
+                {
+                    return AdvancedFilter;
+                }
+            }
+        }
+
+        public string BasicFilter
         {
             get
             {
@@ -450,6 +487,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private bool _showBasicFilter = true;
         private ProtectedCommand _filterSwitchCommand;
         private ProtectedCommand _advanceFilterHelpCommand;
+        private ProtectedCommand _submitAdvancedFilterComamnd;
+
+        public ICommand SubmitAdvancedFilterCommand => _submitAdvancedFilterComamnd;
 
         private void ShowAdvancedFilterHelp()
         {
@@ -468,7 +508,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
             else
             {
-                AdvancedFilter = Filter;
+                AdvancedFilter = BasicFilter;
             }
 
             RaisePropertyChanged(nameof(BasicFilterVisibility));
@@ -505,6 +545,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         public ICommand FilterSwitchCommand => _filterSwitchCommand;
+
+        public string FilterSwitchButtonToolTip
+        {
+            get
+            {
+                return FilterSwitchButtonContent;
+            }
+        }
 
         public string FilterSwitchButtonContent
         {

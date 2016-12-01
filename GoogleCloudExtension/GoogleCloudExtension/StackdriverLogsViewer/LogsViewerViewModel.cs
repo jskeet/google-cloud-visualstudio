@@ -141,6 +141,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        public string SeverityTip => Entry?.Severity;
+
         public ImageSource SeverityLevel
         {
             get
@@ -337,15 +339,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private string _loadingProgress;
         private Lazy<LoggingDataSource> _dataSource;
         private ProtectedCommand _loadNextPageCommand;
-        private ProtectedCommand _refreshCommand;
         private ProtectedCommand _toggleExpandAllCommand;
         private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
 
         public LogEntriesViewModel LogEntriesViewModel { get; private set; }
         public LogsFilterViewModel FilterViewModel { get; private set; }
 
-        public ICommand RefreshCommand => _refreshCommand;
-        public string RefreshCommandToolTip => "Get newest log (descending order)";
         public ICommand LoadNextPageCommand => _loadNextPageCommand;
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
@@ -355,7 +354,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public LogsViewerViewModel()
         {
             _toggleExpandAllCommand = new ProtectedCommand(ToggleExpandAll, canExecuteCommand: true);
-            _refreshCommand = new ProtectedCommand(OnRefreshCommand, canExecuteCommand: false);
             _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             
@@ -469,7 +467,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private async Task LogLoaddingWrapper(Func<Task> callback)
         {
             _loadNextPageCommand.CanExecuteCommand = false;
-            _refreshCommand.CanExecuteCommand = false;
+            FilterViewModel.RefreshCommand.CanExecuteCommand = false;
             // TODO: using ... animation or adding it to Resources.
             LogLoddingProgress = "Loading ... ";
 
@@ -478,12 +476,16 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 await callback();
                 LogLoddingProgress = string.Empty;
             }
+            catch (DataSourceException ex)
+            {
+                LogLoddingProgress = ex.Message;
+            }
             catch (Exception ex)
             {
                 LogLoddingProgress = ex.ToString();
             }
 
-            _refreshCommand.CanExecuteCommand = true;
+            FilterViewModel.RefreshCommand.CanExecuteCommand = true;
         }
 
 
@@ -515,12 +517,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             });
         }
 
-        private void OnRefreshCommand()
-        {
-            FilterViewModel.DateTimePickerViewModel.IsDecendingOrder = true;
-            FilterViewModel.DateTimePickerViewModel.FilterDateTime = DateTime.MaxValue;
-            Reload();
-        }
+
 
         private async void LoadNextPage()
         {
