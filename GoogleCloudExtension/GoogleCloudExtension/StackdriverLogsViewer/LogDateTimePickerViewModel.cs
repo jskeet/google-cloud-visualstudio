@@ -44,10 +44,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         public void OnChangedDateTime()
         {
-            if (goodState.TimeStamp != _date || goodState.DescendingOrder != orderRadioGroup[0].CheckedProperty)
+            DateTime newDateTime = _date.Date.Add(_time);
+            if (goodState.TimeStamp != newDateTime || goodState.DescendingOrder != orderRadioGroup[0].CheckedProperty)
             {
-                Debug.WriteLine("OnChangedDateTime , changed");
-                goodState.TimeStamp = _date;
+                Debug.WriteLine("OnChangedDateTime Invoke DateTimeFilterChange , changed");
+                goodState.TimeStamp = newDateTime;
                 goodState.DescendingOrder = orderRadioGroup[0].CheckedProperty;
                 DateTimeFilterChange?.Invoke(this, new EventArgs());
             }
@@ -87,6 +88,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         private DateTime _date = DateTime.Now.AddDays(-30);
+        private TimeSpan _time = DateTime.Now.TimeOfDay;
         public DateTime FilterDateTime
         {
             get
@@ -97,7 +99,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             set
             {
                 goodState.TimeStamp = value;
-                _date = value;
+                _date = value.Date;
+                _time = value.TimeOfDay;
 
                 RaisePropertyChanged(nameof(Date));
                 RaisePropertyChanged(nameof(Time));
@@ -171,27 +174,23 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 var timeString = value.Date.ToString("s");
                 _date = ConvertTime(timeString) + _date.TimeOfDay;
                 RaisePropertyChanged(nameof(Date));
-                RaisePropertyChanged(nameof(Time));
+                // RaisePropertyChanged(nameof(Time));
             }
         }
 
-        public string Time
+
+        public TimeSpan Time
         {
             get
             {
-                if (_date > DateTime.Now)
-                {
-                    return "Present";
-                }
-
-                return _date.ToString("t");
+                Debug.WriteLine("LogDateTimePickerViewModel ControlTime Get");
+                return _time;
             }
 
-            // Called by TextBox control
-            // Do not set from code, set FilterDateTime instead.
             set
             {
-                // Do not change for now.
+                Debug.WriteLine("LogDateTimePickerViewModel ControlTime Set");
+                SetValueAndRaise(ref _time, value);
             }
         }
 

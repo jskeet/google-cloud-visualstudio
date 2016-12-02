@@ -236,6 +236,7 @@
     </Compile>
     <Compile Include="StackdriverLogsViewer\LogDetailViewModel.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerViewModel.cs" />
+    <Compile Include="StackdriverLogsViewer\TimePicker.xaml.cs" />
     <Compile Include="TerminalServer\TerminalServerManager.cs" />
     <Compile Include="SolutionUtils\ISolutionProject.cs" />
     <Compile Include="SolutionUtils\SolutionHelper.cs" />
@@ -656,6 +657,10 @@
     <Page Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StackdriverLogsViewer\TimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="WindowsCredentialsChooser\WindowsCredentialsChooserWindowContent.xaml">
       <SubType>Designer</SubType>
