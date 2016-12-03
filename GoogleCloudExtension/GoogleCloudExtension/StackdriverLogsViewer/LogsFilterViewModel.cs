@@ -104,7 +104,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         public LogsFilterViewModel()
         {
-            ResetLogIDs();
             //_dateTimeRangeCommand = new ProtectedCommand(() =>
             //{
             //    IsPopupOpen = !IsPopupOpen;
@@ -146,24 +145,33 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         #region Filter change 
         public event EventHandler FilterChanged;
-        public void NotifyFilterChanged() => FilterChanged?.Invoke(this, new EventArgs());
+        public void NotifyFilterChanged()
+        {
+            // Adding _basicFilter is important:
+            // When the main page fetches next page, it comes to get the filter again. 
+            // This is required to keep the filter same.
+            if (_showBasicFilter)
+            {
+                _filter = BasicFilter;
+            }
+            else
+            {
+                _filter = AdvancedFilter;
+            }
+
+            FilterChanged?.Invoke(this, new EventArgs());
+        }
 
         public string Filter
         {
             get
             {
-                if (_showBasicFilter)
-                {
-                    return BasicFilter;
-                }
-                else
-                {
-                    return AdvancedFilter;
-                }
+                return _filter;
             }
         }
 
-        public string BasicFilter
+        private string _filter;
+        private string BasicFilter
         {
             get
             {
@@ -173,22 +181,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     filter.AppendLine($"resource.type=\"{_selectedResource.Type}\"");
                 }
 
-                if (_selectedLogID != null && _selectedLogID != _allLogIdsText)
-                {
-                    if (!_logShortNameToIdLookup.ContainsKey(_selectedLogID))
-                    {
-                        Debug.Assert(false, $"_logShortNameToIdLookup does not find {_selectedLogID}.");
-                    }
-                    else
-                    {
-                        filter.AppendLine($"logName=\"{_logShortNameToIdLookup[_selectedLogID]}\"");
-                    }
-                }
-
                 // _logSeverityList[0] is All Log Levels
                 if (_selectedLogSeverity != null && _selectedLogSeverity != _logSeverityList[0])
                 {
                     filter.AppendLine($"severity={_selectedLogSeverity}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(_logNameFilter?.Filter))
+                {
+                    filter.AppendLine(_logNameFilter.Filter);
                 }
 
                 if (DateTimePickerViewModel.IsDecendingOrder)
@@ -224,37 +225,18 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             if (logs == null)
             {
+                _logNameFilter.TryToRemoveNotOnTheList();
                 return;
             }
+
+            _logNameFilter._donotShowNotInTheList = false;
 
             bool addedId = false;
             try
             {
                 foreach (LogEntry log in logs)
                 {
-                    string logName = log?.LogName;
-                    if (logName == null)
-                    {
-                        continue;
-                    }
-
-                    if (_logIDs.ContainsKey(logName.ToLower()))
-                    {
-                        continue;
-                    }
-
-                    var splits = logName.Split(new string[] { "/", "%2F", "%2f" }, StringSplitOptions.RemoveEmptyEntries);
-                    string shortName = splits[splits.Length - 1];
-                    _logIDs[logName.ToLower()] = shortName;
-                    if (_logShortNameToIdLookup.ContainsKey(shortName))
-                    {
-                        Debug.Assert(false, 
-                            $"Found same short name of {_logShortNameToIdLookup[shortName]} and {logName}");
-                        continue;
-                    }
-
-                    _logShortNameToIdLookup[shortName] = logName;
-                    addedId = true;
+                    addedId = addedId || _logNameFilter.TryAddLogID(log);
                 }
             }
             catch (Exception ex)
@@ -265,9 +247,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 if (addedId)
                 {
+                    Debug.WriteLine("UpdateFilterWithLogEntries RaisePropertyChanged(nameof(LogIDs));");
                     RaisePropertyChanged(nameof(LogIDs));
                 }
             }
+
+            _logNameFilter.AddEmptySelection();
         }
         #endregion
 
@@ -340,17 +325,27 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                         _selectedResource = null;
                     }
                 }
-
-                if (_selectedResource == null)
+                else
                 {
                     foreach (var descriptor in _resourceDescriptors)
                     {
-                        if (descriptor.DisplayName == "Global")
+                        if (descriptor.Type.ToLower() == "global")
                         {
                             SelectedResource = descriptor;
                             return;
                         }
                     }
+
+                    foreach (var descriptor in _resourceDescriptors)
+                    {
+                        if (descriptor.Type.ToLower() == "gce_instance")
+                        {
+                            SelectedResource = descriptor;
+                            return;
+                        }
+                    }
+
+                    _selectedResource = _resourceDescriptors?[0];
                 }
             }
         }
@@ -358,17 +353,165 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
 
         #region Log name ComboBox
-        private string _allLogIdsText = "All Logs";
-        private string _selectedLogID;
-        private Dictionary<string, string> _logIDs = new Dictionary<string, string>();
-        private Dictionary<string, string> _logShortNameToIdLookup = new Dictionary<string, string>();
+        private LogNameFilter _logNameFilter;
+        private Dictionary<string, LogNameFilter> _logNameFilterCache = new Dictionary<string, LogNameFilter>();
+        private class LogNameFilter
+        {
+            public string _selectedLogID;
+            public Dictionary<string, string> _logIDs = new Dictionary<string, string>();
+            public Dictionary<string, string> _logShortNameToIdLookup = new Dictionary<string, string>();
+            public List<string> _logNameCollection = new List<string>();
+
+            public LogNameFilter(Action notifySelectedChange, Action notifyNameCollectionChange)
+            {
+                _logIDs.Clear();
+                _logNameCollection.Clear();
+                _logNameCollection.Add(_allLogIdsText);
+                _selectedLogID = _allLogIdsText;
+                _logShortNameToIdLookup.Clear();
+                _notifySelectedIDChange = notifySelectedChange;
+                _notifyLogNameCollectionChange = notifyNameCollectionChange;
+            }
+
+            private Action _notifySelectedIDChange;
+            private Action _notifyLogNameCollectionChange;
+
+            public const string _logNameNotListed = "Not On The List";
+            public const string _allLogIdsText = "All Logs";
+            public const string _emptySelection = "Select ... ";
+            private string _filter;
+            public bool _donotShowNotInTheList = false;
+
+            public string Filter => _filter;
+
+            /// <summary>
+            /// When there is no 
+            /// </summary>
+            public void TryToRemoveNotOnTheList()
+            {
+                AddEmptySelection();
+                _donotShowNotInTheList = true;
+                _notifyLogNameCollectionChange();
+            }
+
+            public void RemoveEmptySelection()
+            {
+                Debug.WriteLine("RemoveEmptySelection is called");
+                if (_logNameCollection[0] == _emptySelection)
+                {
+                    _logNameCollection.RemoveAt(0);
+                    _notifyLogNameCollectionChange();
+                }
+            }
+
+            public void AddEmptySelection()
+            {
+                // After user selected the "Not On The List",
+                // Set the selection to "Empty" that remindes the user to make another selection if they like.
+                if (_selectedLogID == _logNameNotListed)
+                {
+                    Debug.WriteLine("AddEmptySelection is called");
+                    if (_logNameCollection[0] != _emptySelection)
+                    {
+                        _logNameCollection.Insert(0, _emptySelection);
+                        _notifyLogNameCollectionChange();
+                    }
+
+                    _selectedLogID = _emptySelection;
+                    _notifySelectedIDChange();
+                }
+            }
+
+            public bool TryAddLogID(LogEntry log)
+            {
+                string logName = log?.LogName;
+                if (logName == null)
+                {
+                    return false;
+                }
+
+                if (_logIDs.ContainsKey(logName.ToLower()))
+                {
+                    return false;
+                }
+
+                var splits = logName.Split(new string[] { "/", "%2F", "%2f" }, StringSplitOptions.RemoveEmptyEntries);
+                string shortName = splits[splits.Length - 1];
+                _logIDs[logName.ToLower()] = shortName;
+                if (_logShortNameToIdLookup.ContainsKey(shortName))
+                {
+                    Debug.Assert(false,
+                        $"Found same short name of {_logShortNameToIdLookup[shortName]} and {logName}");
+                    return false;
+                }
+
+                _logNameCollection.Add(shortName);
+                _logShortNameToIdLookup[shortName] = logName;
+                return true;
+            }
+
+            public ObservableCollection<string> LogIDs
+            {
+                get
+                {
+                    var collection = new ObservableCollection<string>(_logNameCollection);
+                    if (collection.Count > 0 && !_donotShowNotInTheList)
+                    {
+                        collection.Add(_logNameNotListed);
+                    }
+
+                    return collection;
+                }
+            }
+
+            public void SetLogNameFilter()
+            {
+                StringBuilder filter = new StringBuilder();
+                if (_selectedLogID != null && _selectedLogID != _allLogIdsText)
+                {
+                    if (_selectedLogID == _logNameNotListed)
+                    {
+                        filter.Append("logName=(");
+                        foreach (string logId in _logShortNameToIdLookup.Values)
+                        {
+                            filter.Append($" NOT {logId} ");
+                        }
+                        filter.Append(")");
+                    }
+                    else if (!_logShortNameToIdLookup.ContainsKey(_selectedLogID))
+                    {
+                        Debug.Assert(false, $"_logShortNameToIdLookup does not find {_selectedLogID}.");
+                    }
+                    else
+                    {
+                        filter.Append($"logName=\"{_logShortNameToIdLookup[_selectedLogID]}\"");
+                    }
+                }
+
+                _filter = filter.ToString();
+            }
+        }
+
 
         public void ResetLogIDs()
         {
-            _logIDs.Clear();
-            _logIDs.Add(_allLogIdsText, _allLogIdsText);
-            _selectedLogID = _allLogIdsText;
-            _logShortNameToIdLookup.Clear();
+            Debug.WriteLine($"ResetLogIDs {_selectedResource.Type}");
+            Debug.Assert(_selectedResource != null);
+            if (!_logNameFilterCache.ContainsKey(_selectedResource.Type))
+            {
+                var newFilter = new LogNameFilter( 
+                    () => RaisePropertyChanged(nameof(SelectedLogID)), 
+                    () => RaisePropertyChanged(nameof(LogIDs)));
+                _logNameFilterCache.Add(_selectedResource.Type, newFilter);
+                _logNameFilter = newFilter;
+            }
+            else
+            {
+                _logNameFilter = _logNameFilterCache[_selectedResource.Type];
+            }
+
+            // Turn out the order is critical when both LogIDs and SelectedLogID changes.
+            // If reverse the order, the selected ends up as empty.
             RaisePropertyChanged(nameof(SelectedLogID));
             RaisePropertyChanged(nameof(LogIDs));
         }
@@ -377,7 +520,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return new ObservableCollection<string>(_logIDs.Values);
+                return _logNameFilter?.LogIDs;
             }
         }
 
@@ -385,15 +528,36 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return _selectedLogID;
+                Debug.WriteLine($"SelectedLogID get {_logNameFilter?._selectedLogID}");
+                return _logNameFilter?._selectedLogID;
             }
 
+            // Trick:  Do not set by programatically.                
             set
             {
-                if (_selectedLogID != value)
+                Debug.Assert(_logNameFilter != null);
+                Debug.WriteLine($"SelectedLogID changed new Value {value}, existing value {_logNameFilter._selectedLogID}");
+                if (value == null)
                 {
-                    _selectedLogID = value;
-                    NotifyFilterChanged();
+                    // It happens when LogIDs change
+                    // Ignore it
+                    return;
+                }
+
+                if (_logNameFilter._selectedLogID != value)
+                {
+                    _logNameFilter._selectedLogID = value;
+                    if (value == LogNameFilter._emptySelection)
+                    {
+                        // Empty value means no change. 
+                        // Do Nothing
+                    }
+                    else
+                    {
+                        _logNameFilter.SetLogNameFilter();
+                        NotifyFilterChanged();
+                        _logNameFilter.RemoveEmptySelection();
+                    }
                 }
             }
         }

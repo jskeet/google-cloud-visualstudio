@@ -367,8 +367,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private async void LoadOnStartup()
         {
             FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
-            Reload();
-            FilterOutResource();
+            if (FilterViewModel.SelectedResource != null)
+            {
+                Reload();
+                FilterOutResource();
+            }
+            else
+            {
+                // TODO: add error handling here
+            }
         }
 
         public DataGridRowDetailsVisibilityMode ToggleExpandHideAll

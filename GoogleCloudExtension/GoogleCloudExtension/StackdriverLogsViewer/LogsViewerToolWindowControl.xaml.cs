@@ -42,6 +42,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private static readonly Lazy<ImageSource> s_refreshMouseDownImage =
             new Lazy<ImageSource>(() => ResourceUtils.LoadImage(RefreshMouseDownImagePath));
 
+        bool _do_logging = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LogsViewerToolWindowControl"/> class.
         /// </summary>
@@ -135,13 +137,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             //    row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
             //}
 
-            Debug.WriteLine($"dg_selectionchanged {dg.SelectedIndex}");
+            if (_do_logging)
+            {
+                Debug.WriteLine($"dg_selectionchanged {dg.SelectedIndex}");
+            }
             //SelectedRow()?.InvalidateVisual();
 
             // This is necessary to fix:
             // By default DataGrid opens detail view on selected row. 
             // It automatically opens detail view on mouse move
-            Debug.WriteLine($"dg_selectionchanged UnselectAll");
+            if (_do_logging)
+            {
+                Debug.WriteLine($"dg_selectionchanged UnselectAll");
+            }
             dg.UnselectAll();
         }
 
@@ -259,7 +267,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             // Use HitTest to resolve the row under the cursor
             var ele = dg.InputHitTest(e.GetPosition(null));
-            Debug.WriteLine($"InputHitTest element {ele?.GetType()}");
+            if (_do_logging)
+            {
+                Debug.WriteLine($"InputHitTest element {ele?.GetType()}");
+            }
             return ele as DataGridRow;
 
             //// If there was no DataGridViewRow under the cursor, return
@@ -312,7 +323,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 if (row != null)
                 {
                     int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
-                    Debug.WriteLine($"Set Selected to row {rowIndex}, previous selected {dg.SelectedIndex} ");
+                    if (_do_logging)
+                    {
+                        Debug.WriteLine($"Set Selected to row {rowIndex}, previous selected {dg.SelectedIndex} ");
+                    }
                     if (previousHighlighted != row)
                     {
                         previousHighlighted?.InvalidateVisual();
@@ -321,7 +335,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     
                     if (preSelected != row)
                     {
-                        Debug.WriteLine($"pre selected row {preSelectedRowInex} {preSelected}");
+                        if (_do_logging)
+                        {
+                            Debug.WriteLine($"pre selected row {preSelectedRowInex} {preSelected}");
+                        }
                         preSelected?.InvalidateVisual();
                         preSelected?.InvalidateMeasure();
                     }

@@ -206,7 +206,7 @@
 
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="#F2A600" />
-                        <Setter Property="Foreground" Value="Black" />
+                        <Setter Property="Foreground" Value="White" />
                         <!--<Setter Property="IsSelected" Value="True" />-->
                     </Trigger>
                 </Style.Triggers>
@@ -333,10 +333,9 @@
                         </ComboBox.ItemContainerStyle>
                     </ComboBox>
 
-
-                    <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
+                <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
-                          SelectedItem="{Binding Path=SelectedLogID}"  
+                          SelectedItem="{Binding Path=SelectedLogID,Mode=TwoWay}"
                           Loaded="ComboBox_Loaded"
                               VerticalAlignment="Center"
                           />
@@ -360,7 +359,7 @@
                         >
                             <Button.Style>
                                 <Style  TargetType="Button">
-                                    <Setter Property="OverridesDefaultStyle" Value="True"/>
+                            <Setter Property="OverridesDefaultStyle" Value="True"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
