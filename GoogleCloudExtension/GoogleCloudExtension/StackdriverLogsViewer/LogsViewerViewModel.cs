@@ -94,7 +94,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 text.Append($"{kv.Key}: {kv.Value}  ");
             }
 
-            return text.ToString().Replace(Environment.NewLine, "  ");
+            var s = text.ToString().Replace(Environment.NewLine, "\\n");
+            return s.Replace("\t", "\\t");
         }
 
         private string ComposeMessage()
