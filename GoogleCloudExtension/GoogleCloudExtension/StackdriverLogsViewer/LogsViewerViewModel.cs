@@ -39,6 +39,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         WARNING,
         ERROR,
         EMERGENCY,
+        CRITICAL,
+        FATAL
     }
 
     internal class LogItem
@@ -99,7 +101,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             if (Entry?.JsonPayload != null)
             {
-                return ComposePayloadMessage(Entry.JsonPayload);
+                if (Entry.JsonPayload.ContainsKey("message"))
+                {
+                    return Entry.JsonPayload["message"].ToString();
+                }
+                else
+                {
+                    return ComposePayloadMessage(Entry.JsonPayload);
+                }
             }
 
             if (Entry?.ProtoPayload != null)
@@ -141,7 +150,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
-        public string SeverityTip => Entry?.Severity;
+        public string SeverityTip => string.IsNullOrWhiteSpace(Entry?.Severity) ? "Any" : Entry.Severity;
 
         public ImageSource SeverityLevel
         {
@@ -156,6 +165,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                 switch (logLevel)
                 {
+                    case LogSeverity.CRITICAL:
+                    case LogSeverity.FATAL:
                     case LogSeverity.EMERGENCY:
                         return s_fatal_icon.Value;
                     case LogSeverity.DEBUG:
