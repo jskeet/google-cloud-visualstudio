@@ -96,6 +96,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GoogleCloudExtension.Utils\GoogleCloudExtension.Utils.csproj">
+      <Project>{21501704-9d0c-442f-ad39-292b3da4bc57}</Project>
+      <Name>GoogleCloudExtension.Utils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GoogleCloudExtension\GoogleCloudExtension.csproj">
       <Project>{bfd6afbf-f0db-4ce1-9681-dae4e93f6dc5}</Project>
       <Name>GoogleCloudExtension</Name>

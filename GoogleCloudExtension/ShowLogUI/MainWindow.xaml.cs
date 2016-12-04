@@ -24,7 +24,9 @@ namespace ShowLogUI
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new LogsViewerViewModel();
+            var newModel = new LogsViewerViewModel();
+            DataContext = newModel;
+            newModel.LoadOnStartup();
         }
     }
 }

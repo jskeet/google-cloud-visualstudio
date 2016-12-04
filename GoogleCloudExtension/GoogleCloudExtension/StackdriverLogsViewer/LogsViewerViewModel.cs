@@ -13,8 +13,8 @@
 // limitations under the License.
 
 using Google.Apis.Logging.v2.Data;
-using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.Accounts;
+using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.Utils;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-
 
 namespace GoogleCloudExtension.StackdriverLogsViewer
 {
@@ -373,11 +372,18 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             LogEntriesViewModel.MessageFilterChanged += (sender, e) => _loadNextPageCommand.CanExecuteCommand = false;
             FilterViewModel = new LogsFilterViewModel();
             FilterViewModel.FilterChanged += (sender, e) => Reload();
-            LoadOnStartup();
         }
 
-        private async void LoadOnStartup()
+        public async void LoadOnStartup()
         {
+            RaiseAllPropertyChanged();
+
+            if (string.IsNullOrWhiteSpace(CredentialsStore.Default?.CurrentAccount?.AccountName) || 
+                string.IsNullOrWhiteSpace(CredentialsStore.Default?.CurrentProjectId))
+            {
+                return;
+            }
+
             FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
             if (FilterViewModel.SelectedResource != null)
             {
@@ -406,13 +412,13 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                if (CredentialsStore.Default?.CurrentAccount?.AccountName != null)
+                if (string.IsNullOrWhiteSpace(CredentialsStore.Default?.CurrentAccount?.AccountName))
                 {
-                    return CredentialsStore.Default?.CurrentAccount?.AccountName;
+                    return null;
                 }
                 else
                 {
-                    return "Setup Account Is Needed";
+                    return CredentialsStore.Default?.CurrentAccount?.AccountName;
                 }
             }
         }
@@ -421,9 +427,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                if (CredentialsStore.Default?.CurrentProjectId == null)
+                if (string.IsNullOrWhiteSpace(CredentialsStore.Default?.CurrentProjectId))
                 {
-                    return "";
+                    return Account == null ? null : "Go to Google Cloud Explore to choose an account";
                 }
                 else
                 {
@@ -526,6 +532,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private async void Reload()
         {
+            if (Project == null)
+            {
+                return;
+            }
+
             await LogLoaddingWrapper(async () => {
                 var result = await _dataSource.Value.GetLogEntryListAsync(CurrentRequestParameters());
                 _nextPageToken = result?.NextPageToken;

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using GoogleCloudExtension.Accounts;
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell;
@@ -31,7 +32,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     /// </para>
     /// </remarks>
     [Guid("043c1f77-7cbf-4676-86c3-f205ed506d26")]
-    public class LogsViewerToolWindow : ToolWindowPane
+    public class LogsViewerToolWindow : ToolWindowPane  
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LogsViewerToolWindow"/> class.
@@ -43,10 +44,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
             // the object returned by the Content property.
-            this.Content = new LogsViewerToolWindowControl()
-            {
-                DataContext = new LogsViewerViewModel(),
-            };
+            this.Content = new LogsViewerToolWindowControl();
+
+            CredentialsStore.Default.CurrentProjectIdChanged += (sender, e) => CreateViewModel();
+
+            CreateViewModel();
+        }
+
+        private void CreateViewModel()
+        {
+            var contol = Content as LogsViewerToolWindowControl;
+            var newModel = new LogsViewerViewModel();
+            contol.DataContext = newModel;
+            newModel.LoadOnStartup();
         }
     }
 }

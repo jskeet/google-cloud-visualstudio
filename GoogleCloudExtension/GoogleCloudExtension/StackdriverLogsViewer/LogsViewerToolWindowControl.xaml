@@ -253,19 +253,27 @@
             <Image Source="{Binding Path=LogoImage}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
             </Border>
             <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray" >
+                <!-- The trigger works, but I don't need it.
                 <Border.Resources>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=Account}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="14" />
                     </Style>
-                </Border.Resources>
+                </Border.Resources>-->
                 <StackPanel Orientation="Horizontal" Margin="2, 3, 0, 5"  >
                     <TextBlock Text="Project  :" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
-                <TextBlock Text="Account  :" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
-                <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
+                    <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
+                    <TextBlock Text="Account  :" VerticalAlignment="Center" Margin="10, 0, 0, 0"/>
+                    <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
 
-            </StackPanel>
-           </Border>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="0, 0, 0, 5"  DataContext="{Binding Path=FilterViewModel}"
