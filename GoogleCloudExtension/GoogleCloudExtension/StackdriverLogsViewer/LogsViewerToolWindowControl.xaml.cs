@@ -353,7 +353,32 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
             }
         }
-    
+
+        private void dtGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var grid = sender as DataGrid;
+            //Debug.WriteLine($"dtGrid_ScrollChanged, sender is {grid.Name}");
+            //if (e.VerticalChange != 0)
+            //{
+            //    Debug.WriteLine($"ScrollChangedEventArgs, VerticalChange {e.VerticalChange}, ViewportHeight {e.ViewportHeight}, VerticalOffset {e.VerticalOffset}");
+            //}
+
+            ScrollViewer sv = e.OriginalSource as ScrollViewer;
+            if (sv == null)
+            {
+                Debug.Assert(false);
+                return;
+            }
+            Debug.WriteLine($"{e.VerticalOffset}, {sv.ScrollableHeight}");
+            if (e.VerticalOffset == sv.ScrollableHeight)
+            {
+                Debug.WriteLine("Now it is at bottom");
+                if (LoadMore?.Command != null && LoadMore.Command.CanExecute(null))
+                {
+                    LoadMore.Command.Execute(null);
+                }
+            }
+        }
 
         ////#region JsonView
         ////private void JValue_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

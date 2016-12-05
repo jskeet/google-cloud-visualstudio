@@ -28,57 +28,6 @@ namespace GoogleCloudExtension.Controls
             InitializeComponent();
         }
 
-        //public DateTime Time
-        //{
-        //    get
-        //    {
-        //        return pickerControl.Time;
-        //    }
-
-        //    set
-        //    {
-        //        pickerControl.Time = value;
-        //    }
-        //}
-
-        //public TimeSpan Time
-        //{
-        //    get
-        //    {
-        //        return (TimeSpan)GetValue(TimeProperty);
-        //    }
-
-        //    // This is not called when databinding value changes.
-        //    set
-        //    {
-        //        SetValue(TimeProperty, value);
-        //    }
-        //}
-
-        //public static readonly DependencyProperty TimeProperty
-        //    = DependencyProperty.Register(
-        //          "Time",
-        //          typeof(TimeSpan),
-        //          typeof(TimePicker),
-        //          new FrameworkPropertyMetadata(TimeSpan.Zero, 
-        //              FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-        //              OnCurrentTimePropertyChanged)
-        //      );
-
-        //private static void OnCurrentTimePropertyChanged(DependencyObject source,
-        //        DependencyPropertyChangedEventArgs e)
-        //{
-        //    TimePicker control = source as TimePicker;
-        //    TimeSpan time = (TimeSpan)e.NewValue;
-
-        //    // Put some update logic here...
-        //    if (e.OldValue != e.NewValue)
-        //    {
-        //        // code to be executed on value update
-        //        control.pickerControl.Time = time;
-        //        Debug.WriteLine($"OnCurrentTimePropertyChanged of TimePicker");
-        //    }
-        //}
     }
 
     [TemplatePart(Name = "PART_HourEditor", Type = typeof(TextBox))]

@@ -422,6 +422,7 @@
                   PreviewMouseDown="dg_PreviewMouseDown"      
                   AlternationCount="2"
                   MouseMove="dg_MouseMove"
+                  ScrollViewer.ScrollChanged="dtGrid_ScrollChanged"
                  >
             <!--  AlternatingRowBackground="AliceBlue" -->
             <!--<DataGrid.Resources>
@@ -664,19 +665,18 @@
             </DataGrid.RowDetailsTemplate>
 
         </DataGrid>
-        <Grid Grid.Row="3" Background="LightSkyBlue">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition  Width="*"/>
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Row="3" >
             <TextBlock Grid.Column="0" Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Left"
-                       MaxHeight="120" Margin="2, 0, 0, 0"
+                       MaxHeight="120" Padding="2, 2, 0, 0"
+                       VerticalAlignment="Bottom"
+                       Background="LightSkyBlue"
                        />
-            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="5, 5, 20, 5" Name="LoadMore" Content="Load More" 
+            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0" Name="LoadMore" 
                     Command="{Binding Path=LoadNextPageCommand}"
                     VerticalAlignment="Bottom"
-                    Style="{StaticResource CommonButtonStandardStyle}"
-                    />
+                    Visibility="Hidden"
+                    Height="0"
+                    />            
         </Grid>
     </Grid>
 </UserControl>

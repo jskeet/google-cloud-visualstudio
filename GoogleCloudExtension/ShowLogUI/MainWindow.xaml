@@ -8,6 +8,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="1024" Width="860">
     <Grid>
-        <logview:LogsViewerToolWindowControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <logview:LogsViewerToolWindowControl x:Name="logViewer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
     </Grid>
 </Window>
