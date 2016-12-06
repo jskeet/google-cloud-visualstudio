@@ -159,6 +159,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 _filter = AdvancedFilter;
             }
 
+            Debug.WriteLine("NotifyFilterChanged");
             FilterChanged?.Invoke(this, new EventArgs());
         }
 
@@ -225,7 +226,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             if (logs == null)
             {
-                _logNameFilter.TryToRemoveNotOnTheList();
                 return;
             }
 
@@ -305,15 +305,13 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             set
             {
                 _resourceDescriptors = value;
-                RaisePropertyChanged(nameof(ResourcesSelection));
-                RaisePropertyChanged(nameof(SelectedResource));
-
-                if (_selectedResource != null)
+                MonitoredResourceDescriptor nextSelection = _selectedResource;
+                if (nextSelection != null)
                 {
                     bool selectedFilteredOut = true;
                     foreach (var descriptor in _resourceDescriptors)
                     {
-                        if (descriptor.Name == _selectedResource.Name)
+                        if (descriptor.Type == nextSelection.Type)
                         {
                             selectedFilteredOut = false;
                             break;
@@ -322,31 +320,41 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                     if (selectedFilteredOut)
                     {
-                        _selectedResource = null;
+                        nextSelection = null;
                     }
                 }
-                else
+
+                if (nextSelection == null)
                 {
                     foreach (var descriptor in _resourceDescriptors)
                     {
                         if (descriptor.Type.ToLower() == "global")
                         {
-                            SelectedResource = descriptor;
-                            return;
+                            nextSelection = descriptor;
+                            break;
                         }
                     }
+                }
 
+                if (nextSelection == null)
+                {
                     foreach (var descriptor in _resourceDescriptors)
                     {
                         if (descriptor.Type.ToLower() == "gce_instance")
                         {
-                            SelectedResource = descriptor;
-                            return;
+                            nextSelection = descriptor;
+                            break;
                         }
                     }
-
-                    _selectedResource = _resourceDescriptors?[0];
                 }
+
+                if (nextSelection == null)
+                {
+                    nextSelection = _resourceDescriptors?[0];
+                }
+
+                SelectedResource = nextSelection;
+                RaisePropertyChanged(nameof(ResourcesSelection));
             }
         }
 
@@ -455,7 +463,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 get
                 {
                     var collection = new ObservableCollection<string>(_logNameCollection);
-                    if (collection.Count > 0 && !_donotShowNotInTheList)
+                    if (collection.Count > 1 && !_donotShowNotInTheList)
                     {
                         collection.Add(_logNameNotListed);
                     }
@@ -492,6 +500,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        public void TryToRemoveEmptyLogName()
+        { 
+            _logNameFilter.TryToRemoveNotOnTheList();
+        }
 
         public void ResetLogIDs()
         {

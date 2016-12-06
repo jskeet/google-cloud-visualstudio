@@ -54,6 +54,21 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
 
+        public LogsViewerViewModel ViewModel
+        {
+            get
+            {
+                return DataContext as LogsViewerViewModel;
+            }
+
+            set
+            {
+                DataContext = value;
+                this.InvalidateProperty(null);
+            }
+        }
+
+
         private void TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox t = (TextBox)sender;
@@ -354,6 +369,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        // TODO: If the loading is cancelled in the middle, it is no longer scrollable.
         private void dtGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             var grid = sender as DataGrid;
@@ -369,14 +385,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 Debug.Assert(false);
                 return;
             }
-            Debug.WriteLine($"{e.VerticalOffset}, {sv.ScrollableHeight}");
+            Debug.WriteLine($"e.VerticalOffset={e.VerticalOffset}, ScrollableHeight={sv.ScrollableHeight}, e.VerticalChange={e.VerticalChange}, e.ViewportHeight={e.ViewportHeight}");
             if (e.VerticalOffset == sv.ScrollableHeight)
             {
                 Debug.WriteLine("Now it is at bottom");
-                if (LoadMore?.Command != null && LoadMore.Command.CanExecute(null))
-                {
-                    LoadMore.Command.Execute(null);
-                }
+                ViewModel.LoadNextPage();
             }
         }
 

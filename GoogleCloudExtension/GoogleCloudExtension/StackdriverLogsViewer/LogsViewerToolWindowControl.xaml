@@ -665,17 +665,21 @@
             </DataGrid.RowDetailsTemplate>
 
         </DataGrid>
-        <Grid Grid.Row="3" >
+        <Grid Grid.Row="3"  Background="LightSkyBlue" Visibility="{Binding Path=ProgressErrorMessageVisibility}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Left"
-                       MaxHeight="120" Padding="2, 2, 0, 0"
-                       VerticalAlignment="Bottom"
-                       Background="LightSkyBlue"
-                       />
-            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0" Name="LoadMore" 
-                    Command="{Binding Path=LoadNextPageCommand}"
+                        MaxHeight="120" Padding="2, 2, 0, 0"
+                        VerticalAlignment="Bottom"
+                        Background="LightSkyBlue"
+                        />
+            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="2" Name="Cancel" Content="Cancel"
+                    Command="{Binding Path=CancelLoadingCommand}"
                     VerticalAlignment="Bottom"
-                    Visibility="Hidden"
-                    Height="0"
+                    Visibility="{Binding Path=CancelLoadingVisibility}"
+                    Style="{StaticResource CommonButtonStandardStyle}"
                     />            
         </Grid>
     </Grid>

@@ -349,14 +349,43 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private string _nextPageToken;
         private string _loadingProgress;
         private Lazy<LoggingDataSource> _dataSource;
-        private ProtectedCommand _loadNextPageCommand;
+        private ProtectedCommand _cancelLoadingCommand;
         private ProtectedCommand _toggleExpandAllCommand;
         private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
 
         public LogEntriesViewModel LogEntriesViewModel { get; private set; }
         public LogsFilterViewModel FilterViewModel { get; private set; }
 
-        public ICommand LoadNextPageCommand => _loadNextPageCommand;
+        private bool _canCallNextPage = false;
+        public ICommand CancelLoadingCommand => _cancelLoadingCommand;
+        private Visibility _cancelLoadingVisible = Visibility.Collapsed;
+        public Visibility CancelLoadingVisibility
+        {
+            get
+            {
+                return _cancelLoadingVisible;
+            }
+
+            set
+            {
+                SetValueAndRaise(ref _cancelLoadingVisible, value);
+            }
+        }
+
+        private Visibility _messageBoradVisibility = Visibility.Collapsed;
+        public Visibility ProgressErrorMessageVisibility
+        {
+            get
+            {
+                return _messageBoradVisibility;
+            }
+
+            set
+            {
+                SetValueAndRaise(ref _messageBoradVisibility, value);
+            }
+        }
+
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
         /// <summary>
@@ -365,11 +394,16 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public LogsViewerViewModel()
         {
             _toggleExpandAllCommand = new ProtectedCommand(ToggleExpandAll, canExecuteCommand: true);
-            _loadNextPageCommand = new ProtectedCommand(LoadNextPage, canExecuteCommand: false);
+            _cancelLoadingCommand = new ProtectedCommand(() => 
+            {
+                Debug.WriteLine("Cancel is called");
+                _cancelled = true;
+            });
+
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             
             LogEntriesViewModel = new LogEntriesViewModel();
-            LogEntriesViewModel.MessageFilterChanged += (sender, e) => _loadNextPageCommand.CanExecuteCommand = false;
+            LogEntriesViewModel.MessageFilterChanged += (sender, e) => _canCallNextPage = false;
             FilterViewModel = new LogsFilterViewModel();
             FilterViewModel.FilterChanged += (sender, e) => Reload();
         }
@@ -387,7 +421,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
             if (FilterViewModel.SelectedResource != null)
             {
-                Reload();
+                // Reload();
                 FilterOutResource();
             }
             else
@@ -448,6 +482,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             private set
             {
                 SetValueAndRaise(ref _loadingProgress, value);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    ProgressErrorMessageVisibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    ProgressErrorMessageVisibility = Visibility.Visible;
+                }
             }
         }
 
@@ -489,15 +531,29 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             FilterViewModel.ResourceDescriptors = resources;
         }
 
+        private object _isLoadingLockObj = new object();
+        private bool _isLoading = false;
         private async Task LogLoaddingWrapper(Func<Task> callback)
         {
-            _loadNextPageCommand.CanExecuteCommand = false;
-            FilterViewModel.RefreshCommand.CanExecuteCommand = false;
-            // TODO: using ... animation or adding it to Resources.
-            LogLoddingProgress = "Loading ... ";
+            lock (_isLoadingLockObj)
+            {
+                if (_isLoading)
+                {
+                    Debug.WriteLine($"_isLoading is true.  Fatal error. fix the code.");
+                    return;
+                }
+
+                _isLoading = true;
+            }
+
 
             try
             {
+                _canCallNextPage = false;
+                FilterViewModel.RefreshCommand.CanExecuteCommand = false;
+                // TODO: using ... animation or adding it to Resources.
+                LogLoddingProgress = "Loading ... ";
+
                 await callback();
                 LogLoddingProgress = string.Empty;
             }
@@ -509,8 +565,18 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 LogLoddingProgress = ex.ToString();
             }
+            finally
+            {
+                _isLoading = false;
+                CancelLoadingVisibility = Visibility.Collapsed;
 
-            FilterViewModel.RefreshCommand.CanExecuteCommand = true;
+                // Disable fetching next page if cancelled or _nextPageToken is empty
+                // This is critical otherwise cancelling a "fetch" won't work
+                // Because at the time "Cancelled", a scroll down to the bottom event is raised and triggers
+                // another automatic NextPage call.
+                _canCallNextPage = (!_cancelled && !string.IsNullOrWhiteSpace(_nextPageToken));
+                FilterViewModel.RefreshCommand.CanExecuteCommand = true;
+            }
         }
 
 
@@ -527,8 +593,66 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             reqParams.Filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
             reqParams.OrderBy = 
                 FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
+            reqParams.PageSize = _defaultPageSize;
             return reqParams;
         }
+
+        private static readonly int _defaultPageSize = 100;
+        private bool _cancelled = false;
+        private async Task LoadLogs(bool firstPage)
+        {
+
+            int count = 0;
+            _cancelled = false;
+            var reqParams = CurrentRequestParameters();
+            while (count < _defaultPageSize && !_cancelled)
+            {
+                Debug.WriteLine($"LoadLogs, count={count}, firstPage={firstPage}");
+
+                CancelLoadingVisibility = Visibility.Visible;
+
+                LogEntryRequestResult results;
+                // Can't change the page size.
+                //reqParams.PageSize = _defaultPageSize - count;
+                if (firstPage)
+                {
+                    results = await _dataSource.Value.GetLogEntryListAsync(reqParams);
+                }
+                else
+                {
+                    results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams, _nextPageToken);
+                }
+
+                if (firstPage)
+                {
+                    firstPage = false;
+                    LogEntriesViewModel.SetLogs(results?.LogEntries, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
+                }
+                else
+                {
+                    LogEntriesViewModel.AddLogs(results?.LogEntries);
+                }
+
+                FilterViewModel.UpdateFilterWithLogEntries(results?.LogEntries);
+                _nextPageToken = results.NextPageToken;
+                if (results?.LogEntries != null)
+                {
+                    count += results.LogEntries.Count;
+                }
+
+                if (string.IsNullOrWhiteSpace(_nextPageToken))
+                {
+                    break;
+                }
+            }            
+
+            if (count == 0 && !_cancelled)
+            {
+                FilterViewModel.TryToRemoveEmptyLogName();
+            }
+        }
+
+
 
         private async void Reload()
         {
@@ -538,33 +662,21 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
 
             await LogLoaddingWrapper(async () => {
-                var result = await _dataSource.Value.GetLogEntryListAsync(CurrentRequestParameters());
-                _nextPageToken = result?.NextPageToken;
-                _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
-                var logs = result?.LogEntries;
-                LogEntriesViewModel.SetLogs(result?.LogEntries, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
-                FilterViewModel.UpdateFilterWithLogEntries(logs);
+                await LoadLogs(firstPage: true);
             });
         }
 
 
-
-        private async void LoadNextPage()
+        public async void LoadNextPage()
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(_nextPageToken));
-            if (string.IsNullOrWhiteSpace(_nextPageToken))
+            if (!_canCallNextPage || string.IsNullOrWhiteSpace(_nextPageToken))
             {
                 return;
             }
 
             await LogLoaddingWrapper(async () =>
             {
-                var reqParams = CurrentRequestParameters();
-                var results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams, _nextPageToken);
-                LogEntriesViewModel.AddLogs(results?.LogEntries);
-                _nextPageToken = results.NextPageToken;
-                _loadNextPageCommand.CanExecuteCommand = !string.IsNullOrWhiteSpace(_nextPageToken);
-                FilterViewModel.UpdateFilterWithLogEntries(results?.LogEntries);
+                await LoadLogs(firstPage: false);
             });
         }
 
