@@ -297,17 +297,21 @@
     <Compile Include="Utils\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="StackdriverLogsViewer\Resources\logo_cloud.png" />
+    <Resource Include="StackdriverLogsViewer\Resources\advanced-filter-help.png" />
+    <Resource Include="StackdriverLogsViewer\Resources\logo_cloud_12.png" />
+    <Resource Include="StackdriverLogsViewer\Resources\search-icon.png" />
+    <Resource Include="StackdriverLogsViewer\Resources\shuffle-sort-order.png" />
+    <Resource Include="StackdriverLogsViewer\Resources\shuffle.png" />
     <Resource Include="StackdriverLogsViewer\Resources\refresh-mouse-down.png" />
     <Resource Include="StackdriverLogsViewer\Resources\refresh-mouseover.png" />
     <Resource Include="StackdriverLogsViewer\Resources\refresh.png" />
-    <Resource Include="StackdriverLogsViewer\Resources\ToggleButton.bmp" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_any.png" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_debug.png" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_error.png" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_fatal.png" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_info.png" />
     <Resource Include="StackdriverLogsViewer\Resources\ic_log_level_warning.png" />
-    <Resource Include="StackdriverLogsViewer\Resources\logo_cloud_128.png" />
     <Resource Include="PublishDialogSteps\ChoiceStep\Resources\AppEngine_128px_Retina.png" />
     <Resource Include="PublishDialogSteps\ChoiceStep\Resources\ComputeEngine_128px_Retina.png" />
     <Resource Include="Theming\Resources\ic_copy_blue_14px.png" />

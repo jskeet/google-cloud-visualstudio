@@ -9,6 +9,7 @@
             xmlns:templateSelectors="clr-namespace:JsonViewerDemo.TemplateSelectors"
             xmlns:valueConverters="clr-namespace:JsonViewerDemo.ValueConverters"
             xmlns:collection="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
              
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
@@ -225,35 +226,101 @@
                                         Padding="3" BorderThickness="0"
                                         Background="White"
                         VerticalAlignment="Bottom"
-                        Margin="5, 0, 30, 0"
                                     >
                     <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
                                     Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Button>
 
             </ControlTemplate>
+
+
+            <Style x:Key="ArrowToggleButton" TargetType="ToggleButton">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <!--BorderBrush="Black" BorderThickness="1 1 1 1" CornerRadius="8 8 8 8"-->
+                            <Border
+                                    Background="Transparent"
+                                    >
+                                <Path Name="Arrow" Fill="Black" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="true">
+                                    <Setter TargetName="Arrow" Property="Data" Value="M 0 0 L 4 4 L 8 0 Z" />
+                                    <Setter Property="ToolTip" Value="Expand All" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="Arrow" Property="Data" Value="M 0 4 L 4 0 L 8 4 Z" />
+                                    <Setter Property="ToolTip" Value="Collapse All" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="WartermarkedTextBox" TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <Style.Resources>
+                    <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Center" Stretch="None">
+                        <VisualBrush.Visual>
+                            <Label Content="Search" Foreground="LightGray" />
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </Style.Resources>
+                <Style.Triggers>
+                    <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                        <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                    </Trigger>
+                    <Trigger Property="Text" Value="{x:Null}">
+                        <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="Background" Value="White" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Style to be applied to the command bar, uses the right theming resource keys. -->
+            <!-- TODO: put this into common style shared by Cloud Explorer too? -->
+            <Style x:Key="CommandBarStyle" TargetType="{x:Type StackPanel}">
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarGradientKey}}" />
+                <!--<Setter Property="Background" Value="Olive" />-->
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+            </Style>
             
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Background="White" >
         <Grid.Resources>
-        <Style TargetType="TextBlock">
+        <!--<Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
-        </Style>
+        </Style>-->
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"  />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" Margin="2, 0, 0, 3" >
-            <Border BorderThickness="0, 0, 0, 0" BorderBrush="LightGray">
-            <Image Source="{Binding Path=LogoImage}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
+        
+        <!-- Logo project account -->
+        <StackPanel Margin="0, 0, 0, 6" Style="{StaticResource CommandBarStyle}"
+                    >
+            <Image Source="{Binding Path=CloudLogo}" Height="20" Width="20" HorizontalAlignment="Left" Margin="12, 0, 6, 0"/>
+            <TextBlock Text="Project:" VerticalAlignment="Center" Padding="0, 5, 0, 5"/>
+            <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="6, 0, 0, 0"/>
+            <TextBlock Text="Account:" VerticalAlignment="Center" Margin="12, 0, 0, 0"/>
+            <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="6, 0, 0, 0"/>
+
+            <!--<Border BorderThickness="0, 0, 0, 0" BorderBrush="LightGray">
+                <Image Source="{Binding Path=CloudLogo}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
             </Border>
             <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray" >
-                <!-- The trigger works, but I don't need it.
+                --><!-- The trigger works, but I don't need it.
                 <Border.Resources>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -265,7 +332,7 @@
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="14" />
                     </Style>
-                </Border.Resources>-->
+                </Border.Resources>--><!--
                 <StackPanel Orientation="Horizontal" Margin="2, 3, 0, 5"  >
                     <TextBlock Text="Project  :" VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
@@ -273,60 +340,90 @@
                     <TextBlock Text="{Binding Path=Account}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
 
                 </StackPanel>
-            </Border>
+            </Border>-->
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="0, 0, 0, 5"  DataContext="{Binding Path=FilterViewModel}"
-              VerticalAlignment="Center"
-                HorizontalAlignment="Left"
+        <!-- Filters -->
+        <StackPanel Grid.Row="1" Margin="12, 6, 12, 6"  DataContext="{Binding Path=FilterViewModel}"
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical"
               >
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
             
-                    <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
-                    <!-- Advanced Filter -->                
-                <Grid   Grid.Column="0"
-                       Visibility="{Binding Path=AdvancedFilterVisibility}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
+            <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
+            <!-- Advanced Filter -->                
+            <Grid Visibility="{Binding Path=AdvancedFilterVisibility}" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                    <TextBox  Grid.Column="0"
-                         Margin="2, 0, 16, 0" VerticalAlignment="Center" Padding="2, 2, 2, 2"
-                         TextWrapping="Wrap" AcceptsReturn="True"
-                         Text="{Binding Path=AdvancedFilter}"
-                         />
-                        <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
-                                Margin="0, 0, 16, 0"
-                                VerticalAlignment="Bottom" HorizontalAlignment="Center"
-                                Style="{StaticResource CommonButtonStandardStyle}"
-                                Content="Sumit Filter" />
-                        <Button  Grid.Column="2"
-                        Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                            ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
-                            Command="{Binding Path=AdvancedFilterHelpCommand}"
-                            BorderThickness="0"   Margin="0, 0, 16, 0"
-                            Content="?" />
-                <Button Grid.Column="3" Template="{StaticResource FilterSwitchButton}" />
+                <TextBox  Grid.Column="0" Margin="0, 0, 6, 0"
+                        VerticalAlignment="Center" Padding="8, 5, 8, 5"
+                        TextWrapping="Wrap" AcceptsReturn="True"
+                        Text="{Binding Path=AdvancedFilter}"
+                        MinLines="3" MaxLines="100"                              
+                        />
+                <StackPanel Grid.Column="1" Margin="6, 0, 0, 0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            >
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Margin="0, 0, 0, 6"
+                                >
+                        <Button  Template="{StaticResource FilterSwitchButton}" />
+                        <Button Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
+                                Command="{Binding Path=AdvancedFilterHelpCommand}"
+                                BorderThickness="0"   Margin="6, 0, 0, 0"
+                                 >
+                            <Image x:Name="questionMark" Source="{Binding Path=FilterHelpImage}"  Width="16" Height="16" />
+                        </Button>
+                    </StackPanel>
+                    <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
+                            Margin="0, 6, 0, 0"
+                            VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                            Style="{StaticResource CommonButtonStandardStyle}"
+                            Content="Sumit Filter" 
+                            />
+                </StackPanel>
             </Grid>
 
-                <!-- Basic Filter -->
-            <StackPanel  Grid.Column="0" Orientation="Horizontal" 
-                        Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Margin="2, 0, 0, 0" x:Name="BasicFilters"
-                        Visibility="{Binding Path=BasicFilterVisibility}"    
+            <!-- Basic Filter -->
+            <StackPanel Margin="0" Visibility="{Binding Path=BasicFilterVisibility}">
+                <Grid Margin="0, 0, 0, 6">
+                    <TextBox Grid.Column="0" Margin="0" 
+                        x:Name="txtMessage" TextWrapping="Wrap"
+                                             
+                                             Padding="8, 5, 8, 5"
+                                             Text="{Binding MessageFilter,UpdateSourceTrigger=PropertyChanged,
+                                                    Mode=OneWayToSource}"                                               
+                             Style="{StaticResource WartermarkedTextBox}"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             Panel.ZIndex="1"
+                             >
+                    </TextBox>
+                    <Button  Template="{StaticResource FilterSwitchButton}" 
+                             Panel.ZIndex="2"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             Margin="0,0,1,0"
+                            />
+
+                </Grid>
+                <StackPanel  Orientation="Horizontal" 
+                        Background="White" HorizontalAlignment="Left" VerticalAlignment="Center"
+                        Margin="0, 6, 0, 0" x:Name="BasicFilters"                        
                         >
                     <StackPanel.Resources>
                         <Style TargetType="ComboBox">
                             <Setter Property="Background" Value="White" />
+                            <Setter Property="Margin" Value="0, 0, 6, 0" />
+                            <Setter Property="Padding" Value="8, 5, 8, 5" />
                         </Style>
+                        
                     </StackPanel.Resources>
-                    <ComboBox Name="comboResource" Width="160" Margin="0, 0,  25, 0" 
+                    <ComboBox Name="comboResource" Width="160" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
                           ItemsSource="{Binding Path=ResourcesSelection}"
                           SelectedItem="{Binding Path=SelectedResource,Mode=TwoWay}"
@@ -341,50 +438,50 @@
                         </ComboBox.ItemContainerStyle>
                     </ComboBox>
 
-                <ComboBox Name="comboLogID" Width="160" Margin="0, 0,  20, 0" 
+                <ComboBox Name="comboLogID" Width="160"
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
                           SelectedItem="{Binding Path=SelectedLogID,Mode=TwoWay}"
                           Loaded="ComboBox_Loaded"
                               VerticalAlignment="Center"
                           />
-                    <ComboBox Name="comboSeverity" Width="160" Margin="0, 0,  16, 0" 
+                    <ComboBox Name="comboSeverity" Width="160"
                           ItemsSource="{Binding Path=LogSeverityList}"
                           SelectedItem="{Binding Path=SelectedLogSeverity}"
                           Loaded="ComboBox_Loaded"
                               VerticalAlignment="Center"
                           />
                     <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" 
-                                                Margin="0, 0, 16, 0"/>
+                                                Margin="0, 0, 6, 0"/>
 
-                        <Button x:Name="btnRefresh"
+                    <Button Grid.Column="1"
+                        x:Name="btnRefresh"
                         ToolTip="{Binding Path=RefreshCommandToolTip}"
-                        Command="{Binding Path=RefreshCommand}" Margin="16, 0, 16, 0"
+                        Command="{Binding Path=RefreshCommand}" Margin="6, 0, 16, 0"
                         PreviewMouseLeftButtonDown="btnRefresh_MouseDown"
                         PreviewMouseLeftButtonUp="btnRefresh_MouseUp"
                         MouseEnter="btnRefresh_MouseEnter"
                         MouseLeave="btnRefresh_MouseLeave"
                         VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
                         >
-                            <Button.Style>
-                                <Style  TargetType="Button">
-                            <Setter Property="OverridesDefaultStyle" Value="True"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <ContentPresenter></ContentPresenter>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
-                            <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
-                        </Button>
-
-                <Button Template="{StaticResource FilterSwitchButton}" />
+                        <Button.Style>
+                            <Style  TargetType="Button">
+                                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <ContentPresenter></ContentPresenter>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
+                    </Button>
 
             </StackPanel>
-                
-                <!--<ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
+            </StackPanel>
+            <!--<ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
                                VerticalAlignment="Center" 
                           IsDropDownOpen="{Binding Path=IsSwitchFilterDropDownOpen}"
                           BorderThickness="0"
@@ -402,9 +499,10 @@
                         </ComboBoxItem.Template>
                     </ComboBoxItem>
                 </ComboBox>-->
-        </Grid>
+        </StackPanel>
             
-        <DataGrid Grid.Row="2"  x:Name="dg" 
+        <DataGrid Margin="12, 6, 12, 12"
+            Grid.Row="2"  x:Name="dg" 
                    Padding="0,0, 0, 0" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
                   CanUserResizeRows="False"
@@ -416,13 +514,14 @@
                   DataContext="{Binding Path=LogEntriesViewModel}"
                   ItemsSource="{Binding Path=LogEntryList}" 
                   Background="White"
-                  BorderThickness="0, 1, 0, 0"
+                  BorderThickness="1"
                   EnableRowVirtualization="True"   
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0, 0, 0,0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   PreviewMouseDown="dg_PreviewMouseDown"      
                   AlternationCount="2"
                   MouseMove="dg_MouseMove"
                   ScrollViewer.ScrollChanged="dtGrid_ScrollChanged"
+                  ColumnHeaderHeight="18"
                  >
             <!--  AlternatingRowBackground="AliceBlue" -->
             <!--<DataGrid.Resources>
@@ -482,17 +581,69 @@
                                             <ItemsPresenter />
                                         </Expander>-->
 
-                                        <StackPanel  Background="LightGray">
-                                                <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
-                                                    <TextBlock Text="{Binding Path=Name}" />
-                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
-                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)"/>
-                                                </StackPanel>
+                                        <StackPanel  Background="LightGray" >
+                                            <StackPanel.Resources>
+                                                <Style TargetType="TextBlock" >
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </StackPanel.Resources>
+                                            <StackPanel Orientation="Horizontal" Margin="9, 1, 0, 1" >
+                                                <TextBlock Text="{Binding Path=Name}"  Padding="0, 5, 4, 5" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Padding="4, 5, 2, 5"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)" Padding="0, 5, 8, 5"/>
+                                            </StackPanel>
                                             <ItemsPresenter />
                                         </StackPanel>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                <!--
+                                        This appllies customized toggle button.
+                                            <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
+                                                <!--<Expander IsExpanded="True"  Background="LightGray">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
+                                                        <TextBlock Text="{Binding Path=Name}" />
+                                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Margin="8,0,4,0"/>
+                                                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)"/>
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>-->
+
+                                                <StackPanel  Background="LightGray" >
+                                                    <StackPanel.Resources>
+                                                        <Style TargetType="TextBlock" >
+                                                            <Setter Property="FontWeight" Value="Bold" />
+                                                        </Style>
+                                                    </StackPanel.Resources>
+                                                    <DockPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="9, 1, 0, 1" >
+                                                        <TextBlock Text="{Binding Path=Name}"  Padding="0, 5, 4, 5" />
+                                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Padding="4, 5, 2, 5"/>
+                                                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)" Padding="0, 5, 8, 5"/>
+
+                                                    </StackPanel>
+                                                        <ToggleButton DockPanel.Dock="Right"
+                                                                      Margin="0, 0, 12, 0"
+                                                            Style="{StaticResource ArrowToggleButton}"
+                                                                      Padding="0, 5, 0, 5"
+                                                                      VerticalAlignment="Center"
+                                                                      HorizontalAlignment="Right"
+                                                                      />                                                    
+                                                    </DockPanel>
+                                                    <ItemsPresenter />
+                                                </StackPanel>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
                     </GroupStyle.ContainerStyle>
                 </GroupStyle>
@@ -527,8 +678,8 @@
 
                 <!-- Log Level -->
                 <DataGridTemplateColumn IsReadOnly="True">
-                    <DataGridTemplateColumn.Header>
-                        <!--<TextBlock >a</TextBlock>-->
+                    <!--<DataGridTemplateColumn.Header>
+                        --><!--<TextBlock >a</TextBlock>--><!--
                         <Expander x:Name="allExpander" IsExpanded="False" 
                                   ToolTip="Toggle All Log Entries Detail View"
                                   Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"
@@ -539,18 +690,18 @@
                             </Expander.LayoutTransform>
 
                         </Expander>
-                        <!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
+                        --><!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
                                      Padding="6" BorderThickness="1" 
                                  
                                  >
                             <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
                                     Margin="3,1,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Button>-->
+                        </Button>--><!--
 
-                    </DataGridTemplateColumn.Header>
+                    </DataGridTemplateColumn.Header>-->
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="5, 1, 10, 1" 
+                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="9, 1, 8, 1" 
                                    ToolTip="{Binding Path=SeverityTip}"
                                    />
                         </DataTemplate>
@@ -586,13 +737,13 @@
                                 <!--<TextBlock Text="{Binding Content, RelativeSource=
                                          {RelativeSource Mode=TemplatedParent}}"/>-->
                                 <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
-                                <TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
+                                <!--<TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
                                          Margin="50, 0, 0, 0" FontSize="14"
                                          Padding="0, 1, 0, 1"
                                          Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
                                                 Mode=OneWayToSource,
                                                RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  >
-                                    <!-- Watermark background -->
+                                    --><!-- Watermark background --><!--
                                     <TextBox.Style>
                                         <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
                                             <Style.Resources>
@@ -615,7 +766,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </TextBox.Style>
-                                </TextBox>
+                                </TextBox>-->
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
@@ -665,22 +816,32 @@
             </DataGrid.RowDetailsTemplate>
 
         </DataGrid>
-        <Grid Grid.Row="3"  Background="LightSkyBlue" Visibility="{Binding Path=ProgressErrorMessageVisibility}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="{Binding LogLoddingProgress}" TextWrapping="Wrap" TextAlignment="Left"
-                        MaxHeight="120" Padding="2, 2, 0, 0"
+        <Grid Grid.Row="3"  
+              Margin="12, 0, 12, 12"             
+              Background="White" >
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" TextAlignment="Left"
+                        MaxHeight="120" Padding="8, 5, 8, 5"
                         VerticalAlignment="Bottom"
-                        Background="LightSkyBlue"
+                        Background="White"
+                        Foreground="Red"     
+                        Visibility="{Binding Path=ProgressErrorMessageVisibility}"
                         />
-            <Button Grid.Column="1" HorizontalAlignment="Right" Margin="2" Name="Cancel" Content="Cancel"
+            <StackPanel Visibility="{Binding Path=CancelLoadingVisibility}"
+                        Orientation="Horizontal" HorizontalAlignment="Center"
+                        >
+                <TextBlock Text="{Binding LogLoddingProgress}" Padding="8, 5, 8, 5"
+                           Foreground="Red"
+                           />
+                <Button 
+                    Margin="12, 0, 12, 0"
+                    HorizontalAlignment="Right" Name="Cancel" 
+                    Content="Cancel"
                     Command="{Binding Path=CancelLoadingCommand}"
                     VerticalAlignment="Bottom"
                     Visibility="{Binding Path=CancelLoadingVisibility}"
-                    Style="{StaticResource CommonButtonStandardStyle}"
-                    />            
+                    Style="{StaticResource CommonButtonStandardStyle}"                    
+                    />
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

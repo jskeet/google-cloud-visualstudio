@@ -183,6 +183,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+
         private void ConvertTimestamp(object timestamp)
         {
             if (timestamp == null)
@@ -233,6 +234,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         ListCollectionView _collectionView;
         private Object _collectionViewLock = new Object();
         private string _filter;
+
+        private const string ShuffleIconPath = "StackdriverLogsViewer/Resources/shuffle.png";
+        private static readonly Lazy<ImageSource> s_shuffle_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ShuffleIconPath));
+        public ImageSource ShuffleImage => s_shuffle_icon.Value;
 
         public LogEntriesViewModel()
         {
@@ -341,10 +347,22 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     /// </summary>
     public class LogsViewerViewModel : ViewModelBase
     {
-        private const string GoogleCloudLogoPath = "Theming/Resources/GCP_logo_horizontal.png";
-        private static readonly Lazy<ImageSource> s_logo = 
-            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(GoogleCloudLogoPath));
-        public ImageSource LogoImage => s_logo.Value;
+        //private const string GoogleCloudLogoPath = "Theming/Resources/GCP_logo_horizontal.png";
+        //private static readonly Lazy<ImageSource> s_logo = 
+        //    new Lazy<ImageSource>(() => ResourceUtils.LoadImage(GoogleCloudLogoPath));
+        //public ImageSource LogoImage => s_logo.Value;
+
+        private const string CloudLogo20Path = "StackdriverLogsViewer/Resources/logo_cloud.png";
+        private const string SearchIconPath = "StackdriverLogsViewer/Resources/search-icon.png";
+
+        private static readonly Lazy<ImageSource> s_cloud_logo_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(CloudLogo20Path));
+        private static readonly Lazy<ImageSource> s_search_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(SearchIconPath));
+
+
+        public ImageSource CloudLogo => s_cloud_logo_icon.Value;
+
 
         private string _nextPageToken;
         private string _loadingProgress;
@@ -386,6 +404,20 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        private Visibility _loadingBlockVisibility = Visibility.Collapsed;
+        public Visibility LoadingBlockVisibility
+        {
+            get
+            {
+                return _loadingBlockVisibility;
+            }
+
+            set
+            {
+                SetValueAndRaise(ref _loadingBlockVisibility, value);
+            }
+        }
+
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
         /// <summary>
@@ -397,6 +429,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _cancelLoadingCommand = new ProtectedCommand(() => 
             {
                 Debug.WriteLine("Cancel is called");
+                LogLoddingProgress = "Cancelling . . .";
+                CancelLoadingVisibility = Visibility.Collapsed;
                 _cancelled = true;
             });
 
@@ -472,6 +506,28 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        private string _errorMessage;
+        public string ErrorMessage
+        {
+            get
+            {
+                return _errorMessage;
+            }
+
+            private set
+            {
+                SetValueAndRaise(ref _errorMessage, value);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    ProgressErrorMessageVisibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    ProgressErrorMessageVisibility = Visibility.Visible;
+                }
+            }
+        }
+
         public string LogLoddingProgress
         {
             get
@@ -484,11 +540,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 SetValueAndRaise(ref _loadingProgress, value);
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    ProgressErrorMessageVisibility = Visibility.Collapsed;
+                    LoadingBlockVisibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    ProgressErrorMessageVisibility = Visibility.Visible;
+                    LoadingBlockVisibility = Visibility.Visible;
                 }
             }
         }
@@ -542,6 +598,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     return;
                 }
 
+                ErrorMessage = null;
                 _isLoading = true;
             }
 
@@ -550,25 +607,26 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 _canCallNextPage = false;
                 FilterViewModel.RefreshCommand.CanExecuteCommand = false;
-                // TODO: using ... animation or adding it to Resources.
-                LogLoddingProgress = "Loading ... ";
+                //// TODO: using ... animation or adding it to Resources.
+                //LogLoddingProgress = "Loading ... ";
 
                 await callback();
                 LogLoddingProgress = string.Empty;
+                ErrorMessage = string.Empty;
             }
             catch (DataSourceException ex)
             {
-                LogLoddingProgress = ex.Message;
+                ErrorMessage = ex.Message;
             }
             catch (Exception ex)
             {
-                LogLoddingProgress = ex.ToString();
+                ErrorMessage = ex.ToString();
             }
             finally
             {
                 _isLoading = false;
                 CancelLoadingVisibility = Visibility.Collapsed;
-
+                LogLoddingProgress = string.Empty;
                 // Disable fetching next page if cancelled or _nextPageToken is empty
                 // This is critical otherwise cancelling a "fetch" won't work
                 // Because at the time "Cancelled", a scroll down to the bottom event is raised and triggers
@@ -637,19 +695,17 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 Debug.WriteLine($"LoadLogs, count={count}, firstPage={firstPage}");
 
                 CancelLoadingVisibility = Visibility.Visible;
-
-                var results = await _dataSource.Value.ListLogEntriesAsync(filter, order, _defaultPageSize, _nextPageToken);
+                LogLoddingProgress = "Loading . . .";
 
                 if (firstPage)
                 {
                     firstPage = false;
-                    LogEntriesViewModel.SetLogs(results?.LogEntries, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
-                }
-                else
-                {
-                    LogEntriesViewModel.AddLogs(results?.LogEntries);
+                    _nextPageToken = null;
+                    LogEntriesViewModel.SetLogs(null, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
                 }
 
+                var results = await _dataSource.Value.ListLogEntriesAsync(filter, order, _defaultPageSize, _nextPageToken);
+                LogEntriesViewModel.AddLogs(results?.LogEntries);
                 FilterViewModel.UpdateFilterWithLogEntries(results?.LogEntries);
                 _nextPageToken = results.NextPageToken;
                 if (results?.LogEntries != null)

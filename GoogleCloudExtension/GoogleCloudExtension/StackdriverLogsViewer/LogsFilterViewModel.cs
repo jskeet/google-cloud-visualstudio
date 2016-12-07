@@ -97,10 +97,17 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
     public class LogsFilterViewModel : ViewModelBase
     {
-        private const string ToggleButtonImagePath = "StackdriverLogsViewer/Resources/ToggleButton.bmp";
+        //private const string ToggleButtonImagePath = "StackdriverLogsViewer/Resources/ToggleButton.bmp";
 
-        private static readonly Lazy<ImageSource> s_toggleButton = 
-            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ToggleButtonImagePath));
+        //private static readonly Lazy<ImageSource> s_toggleButton = 
+        //    new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ToggleButtonImagePath));
+        //public ImageSource ToggleButtonImage => s_toggleButton.Value;
+
+        private const string FilterHelpIconPath = "StackdriverLogsViewer/Resources/advanced-filter-help.png";
+        private static readonly Lazy<ImageSource> s_filter_help_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(FilterHelpIconPath));
+        public ImageSource FilterHelpImage => s_filter_help_icon.Value;
+
 
         public LogsFilterViewModel()
         {
@@ -127,7 +134,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _refreshCommand = new ProtectedCommand(OnRefreshCommand, canExecuteCommand: false);
         }
 
-        public ImageSource ToggleButtonImage => s_toggleButton.Value;
 
         #region Refresh Button
         private ProtectedCommand _refreshCommand;
@@ -746,7 +752,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return _showBasicFilter ? Visibility.Visible : Visibility.Hidden;
+                return _showBasicFilter ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -754,7 +760,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return _showBasicFilter ? Visibility.Hidden : Visibility.Visible;
+                return _showBasicFilter ? Visibility.Collapsed : Visibility.Visible;
             }
         }
         #endregion
