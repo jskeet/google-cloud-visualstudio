@@ -48,7 +48,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             CredentialsStore.Default.CurrentProjectIdChanged += (sender, e) => CreateViewModel();
 
-            CreateViewModel();
+            //CreateViewModel();
         }
 
         private void CreateViewModel()
@@ -57,6 +57,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             var newModel = new LogsViewerViewModel();
             contol.DataContext = newModel;
             newModel.LoadOnStartup();
+        }
+
+        public override void OnToolWindowCreated()
+        {
+            base.OnToolWindowCreated();
+            CreateViewModel();
         }
     }
 }

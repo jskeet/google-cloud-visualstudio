@@ -389,7 +389,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             if (e.VerticalOffset == sv.ScrollableHeight)
             {
                 Debug.WriteLine("Now it is at bottom");
-                ViewModel.LoadNextPage();
+                ViewModel?.LoadNextPage();
             }
         }
 

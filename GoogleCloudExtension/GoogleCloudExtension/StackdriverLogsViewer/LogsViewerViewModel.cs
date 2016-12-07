@@ -503,10 +503,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
 
             string filter = $"resource.type=\"{resourceDescriptor.Type}\"";
-            var reqParams = new LogEntryRequestParams() { Filter = filter, PageSize = 1 };
             try
             {
-                var result =  await _dataSource.Value.GetLogEntryListAsync(reqParams);
+                var result =  await _dataSource.Value.ListLogEntriesAsync(filter, pageSize: 1);
                 return result?.LogEntries != null && result.LogEntries.Count > 0;
             }
             catch (Exception ex)
@@ -586,16 +585,39 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             return string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
         }
 
-        private LogEntryRequestParams CurrentRequestParameters()
-        {
-            LogEntryRequestParams reqParams = new LogEntryRequestParams();
-            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
-            reqParams.Filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
-            reqParams.OrderBy = 
-                FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
-            reqParams.PageSize = _defaultPageSize;
-            return reqParams;
-        }
+        /////// <summary>
+        /////// LogEntry request parameters.
+        /////// </summary>
+        ////public class LogEntryRequestParams
+        ////{
+        ////    /// <summary>
+        ////    /// Optional
+        ////    /// Refert to https://cloud.google.com/logging/docs/view/advanced_filters. 
+        ////    /// </summary>
+        ////    public string Filter;
+
+        ////    /// <summary>
+        ////    /// Optional
+        ////    /// If page size is not specified, a server side default value is used. 
+        ////    /// </summary>
+        ////    public int? PageSize;
+
+        ////    /// <summary>
+        ////    /// Optional "timestamp desc" or "timestamp asc"
+        ////    /// </summary>
+        ////    public string OrderBy;
+        ////}
+
+        //private LogEntryRequestParams CurrentRequestParameters()
+        //{
+        //    LogEntryRequestParams reqParams = new LogEntryRequestParams();
+        //    var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+        //    reqParams.Filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
+        //    reqParams.OrderBy = 
+        //        FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
+        //    reqParams.PageSize = _defaultPageSize;
+        //    return reqParams;
+        //}
 
         private static readonly int _defaultPageSize = 100;
         private bool _cancelled = false;
@@ -604,24 +626,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             int count = 0;
             _cancelled = false;
-            var reqParams = CurrentRequestParameters();
+            //var reqParams = CurrentRequestParameters();
+
+            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+            string filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
+            var order = FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
+
             while (count < _defaultPageSize && !_cancelled)
             {
                 Debug.WriteLine($"LoadLogs, count={count}, firstPage={firstPage}");
 
                 CancelLoadingVisibility = Visibility.Visible;
 
-                LogEntryRequestResult results;
-                // Can't change the page size.
-                //reqParams.PageSize = _defaultPageSize - count;
-                if (firstPage)
-                {
-                    results = await _dataSource.Value.GetLogEntryListAsync(reqParams);
-                }
-                else
-                {
-                    results = await _dataSource.Value.GetNextPageLogEntryListAsync(reqParams, _nextPageToken);
-                }
+                var results = await _dataSource.Value.ListLogEntriesAsync(filter, order, _defaultPageSize, _nextPageToken);
 
                 if (firstPage)
                 {
@@ -642,6 +659,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                 if (string.IsNullOrWhiteSpace(_nextPageToken))
                 {
+                    _nextPageToken = null;
                     break;
                 }
             }            
