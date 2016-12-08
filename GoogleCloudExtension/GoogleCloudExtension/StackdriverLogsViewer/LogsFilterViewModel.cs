@@ -108,6 +108,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             new Lazy<ImageSource>(() => ResourceUtils.LoadImage(FilterHelpIconPath));
         public ImageSource FilterHelpImage => s_filter_help_icon.Value;
 
+        private const string SearchIconPath = "StackdriverLogsViewer/Resources/search-icon.png";
+        private static readonly Lazy<ImageSource> s_search_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(SearchIconPath));
+        public ImageSource SearchIcon => s_search_icon.Value;
+
 
         public LogsFilterViewModel()
         {
@@ -398,15 +403,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             public string Filter => _filter;
 
-            /// <summary>
-            /// When there is no 
-            /// </summary>
-            public void TryToRemoveNotOnTheList()
-            {
-                AddEmptySelection();
-                _donotShowNotInTheList = true;
-                _notifyLogNameCollectionChange();
-            }
+            ///// <summary>
+            ///// When there is no 
+            ///// </summary>
+            //public void TryToRemoveNotOnTheList()
+            //{
+            //    AddEmptySelection();
+            //    _donotShowNotInTheList = true;
+            //    _notifyLogNameCollectionChange();
+            //}
 
             public void RemoveEmptySelection()
             {
@@ -508,7 +513,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         public void TryToRemoveEmptyLogName()
         { 
-            _logNameFilter.TryToRemoveNotOnTheList();
+            _logNameFilter.RemoveEmptySelection();
         }
 
         public void ResetLogIDs()

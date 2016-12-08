@@ -64,10 +64,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             set
             {
                 DataContext = value;
-                this.InvalidateProperty(null);
+                txtMessage.DataContext = value.LogEntriesViewModel;
             }
         }
-
 
         private void TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -268,7 +267,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             var toggleButtonTemplate = toggleButton.Template;
             var border = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
 
-            border.Background = new SolidColorBrush(Colors.White);
+            if (comboBox.Name == "comboTimeZone")
+            {
+                border.Background = new SolidColorBrush(Colors.Transparent);
+            }
+            else
+            {
+                border.Background = new SolidColorBrush(Colors.White);
+            }
         }
 
         private DataGridRow SelectedRow()

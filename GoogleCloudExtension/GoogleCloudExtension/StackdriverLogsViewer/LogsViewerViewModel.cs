@@ -312,13 +312,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             set
             {
                 _filter = value;
+                Debug.WriteLine($"MessageFilter is called {_filter}");
+                if (_collectionView == null)
+                {
+                    Debug.WriteLine($"set MessageFilter, _collectionView is still null");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(_filter))
                 {
                     _collectionView.Filter = null;
                     return;
                 }
 
-                Debug.WriteLine($"MessageFilter is called {_filter}");
                 lock (_collectionViewLock)
                 {
                     var splits = _filter.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -353,12 +359,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         //public ImageSource LogoImage => s_logo.Value;
 
         private const string CloudLogo20Path = "StackdriverLogsViewer/Resources/logo_cloud.png";
-        private const string SearchIconPath = "StackdriverLogsViewer/Resources/search-icon.png";
 
         private static readonly Lazy<ImageSource> s_cloud_logo_icon =
             new Lazy<ImageSource>(() => ResourceUtils.LoadImage(CloudLogo20Path));
-        private static readonly Lazy<ImageSource> s_search_icon =
-            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(SearchIconPath));
 
 
         public ImageSource CloudLogo => s_cloud_logo_icon.Value;
@@ -599,6 +602,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
 
                 ErrorMessage = null;
+                Console.WriteLine("Setting _isLoading to true");
                 _isLoading = true;
             }
 
@@ -624,6 +628,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
             finally
             {
+                Console.WriteLine("Setting _isLoading to false");
                 _isLoading = false;
                 CancelLoadingVisibility = Visibility.Collapsed;
                 LogLoddingProgress = string.Empty;

@@ -351,69 +351,66 @@
               >
             
             <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
-            <!-- Advanced Filter -->                
-            <Grid Visibility="{Binding Path=AdvancedFilterVisibility}" Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBox  Grid.Column="0" Margin="0, 0, 6, 0"
+            <!-- Advanced Filter -->
+            <Border Margin="0"
+                    Visibility="{Binding Path=AdvancedFilterVisibility}"
+                        BorderThickness="1" BorderBrush="LightGray"
+                        >
+                <Border.Resources>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsInsideVS}" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.SearchBoxBorderKey}}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Resources>
+                <Grid  Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox  Grid.Column="0" Margin="0, 0, 6, 0"
                         VerticalAlignment="Center" Padding="8, 5, 8, 5"
                         TextWrapping="Wrap" AcceptsReturn="True"
                         Text="{Binding Path=AdvancedFilter}"
-                        MinLines="3" MaxLines="100"                              
+                        MinLines="3" MaxLines="100"  
+                              BorderThickness="0"
                         />
-                <StackPanel Grid.Column="1" Margin="6, 0, 0, 0"
+                    <StackPanel Grid.Column="1" Margin="6, 6, 0, 0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
                             >
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                Margin="0, 0, 0, 6"
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Margin="0, 0, 0, 3"
                                 >
-                        <Button  Template="{StaticResource FilterSwitchButton}" />
-                        <Button Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            <Button  Template="{StaticResource FilterSwitchButton}" />
+                            <Button Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"
                                 ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
                                 Command="{Binding Path=AdvancedFilterHelpCommand}"
                                 BorderThickness="0"   Margin="6, 0, 0, 0"
                                  >
-                            <Image x:Name="questionMark" Source="{Binding Path=FilterHelpImage}"  Width="16" Height="16" />
-                        </Button>
-                    </StackPanel>
-                    <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
-                            Margin="0, 6, 0, 0"
+                                <Image x:Name="questionMark" Source="{Binding Path=FilterHelpImage}"  Width="16" Height="16" />
+                            </Button>
+                        </StackPanel>
+                        <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
+                            Margin="0, 3, 6, 6"
                             VerticalAlignment="Bottom" HorizontalAlignment="Left"
                             Style="{StaticResource CommonButtonStandardStyle}"
                             Content="Sumit Filter" 
                             />
-                </StackPanel>
-            </Grid>
-
-            <!-- Basic Filter -->
-            <StackPanel Margin="0" Visibility="{Binding Path=BasicFilterVisibility}">
-                <Grid Margin="0, 0, 0, 6">
-                    <TextBox Grid.Column="0" Margin="0" 
-                        x:Name="txtMessage" TextWrapping="Wrap"
-                                             
-                                             Padding="8, 5, 8, 5"
-                                             Text="{Binding MessageFilter,UpdateSourceTrigger=PropertyChanged,
-                                                    Mode=OneWayToSource}"                                               
-                             Style="{StaticResource WartermarkedTextBox}"
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Center"
-                             Panel.ZIndex="1"
-                             >
-                    </TextBox>
-                    <Button  Template="{StaticResource FilterSwitchButton}" 
-                             Panel.ZIndex="2"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Margin="0,0,1,0"
-                            />
+                    </StackPanel>
 
                 </Grid>
+            </Border>
+            <!-- Basic Filter -->
+            <StackPanel Margin="0" Visibility="{Binding Path=BasicFilterVisibility}">
+
+                <!-- Combo Boxes  -->
                 <StackPanel  Orientation="Horizontal" 
                         Background="White" HorizontalAlignment="Left" VerticalAlignment="Center"
-                        Margin="0, 6, 0, 0" x:Name="BasicFilters"                        
+                        Margin="0, 0, 0, 6" x:Name="BasicFilters"                        
                         >
                     <StackPanel.Resources>
                         <Style TargetType="ComboBox">
@@ -478,8 +475,49 @@
                         </Button.Style>
                         <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
                     </Button>
-
-            </StackPanel>
+                </StackPanel>
+                <Border Margin="0, 6, 0, 0"
+                        BorderThickness="1" BorderBrush="LightGray"
+                        >
+                    <Border.Resources>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsInsideVS}" Value="True">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.SearchBoxBorderKey}}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Resources>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Margin="0" 
+                             BorderThickness="0"
+                             x:Name="txtMessage" TextWrapping="Wrap"                                             
+                             Padding="8, 5, 8, 5"
+                             Text="{Binding MessageFilter,UpdateSourceTrigger=PropertyChanged,Mode=OneWayToSource}"                                               
+                             Style="{StaticResource WartermarkedTextBox}"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             >
+                    </TextBox>
+                    <Button Grid.Column="1"
+                            Background="Transparent"
+                            BorderThickness="0"
+                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Image Source="{Binding Path=SearchIcon}" Height="13" Width="13" />
+                    </Button>
+                        <Button Grid.Column="2"
+                    Template="{StaticResource FilterSwitchButton}" 
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,1,0"
+                        />
+                    </Grid>
+                </Border>
             </StackPanel>
             <!--<ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
                                VerticalAlignment="Center" 
@@ -500,9 +538,45 @@
                     </ComboBoxItem>
                 </ComboBox>-->
         </StackPanel>
-            
-        <DataGrid Margin="12, 6, 12, 12"
-            Grid.Row="2"  x:Name="dg" 
+
+        <Grid Grid.Row="2" Margin="12, 6, 12, 12">
+
+            <Border Background="Transparent" Panel.ZIndex="20" HorizontalAlignment="Right"  VerticalAlignment="Top" >
+                <StackPanel  
+                        Orientation="Horizontal"
+                        >
+                <TextBlock Text="2016-12-8" Margin="12, 3, 3, 0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="comboTimeZone" Margin="3, 0, 18, 0" VerticalAlignment="Top"
+                             ToolTip="Click To Select Different Timezone"
+                             BorderThickness="0"
+                               SelectedIndex="0"
+                               Background="Transparent"
+                              Loaded="ComboBox_Loaded"
+                             >
+                        <ComboBoxItem>PST</ComboBoxItem>
+                        <ComboBoxItem>Noew York Time</ComboBoxItem>
+                        <ComboBoxItem>Some other</ComboBoxItem>
+                        <ComboBoxItem>London Time</ComboBoxItem>
+                        <ComboBoxItem>BeijingTime</ComboBoxItem>
+                    </ComboBox>
+                    <Expander x:Name="allExpander"                       
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      IsExpanded="False" 
+                                  ToolTip="Toggle All Log Entries Detail View"
+                                  Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"                                 
+                                  >
+                <Expander.LayoutTransform >
+                    <ScaleTransform ScaleX="1" ScaleY="1"></ScaleTransform>
+                </Expander.LayoutTransform>
+
+            </Expander>
+            </StackPanel>
+            </Border>
+
+            <DataGrid 
+                Panel.ZIndex="10"
+             x:Name="dg" 
                    Padding="0,0, 0, 0" IsReadOnly="True"
                   GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
                   CanUserResizeRows="False"
@@ -515,6 +589,7 @@
                   ItemsSource="{Binding Path=LogEntryList}" 
                   Background="White"
                   BorderThickness="1"
+                  BorderBrush="LightGray"
                   EnableRowVirtualization="True"   
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   PreviewMouseDown="dg_PreviewMouseDown"      
@@ -597,12 +672,15 @@
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+                            <!--
+                            Adding button on first group won't help.  When user scroll down, the button is hidden.
+                            The trigger works 
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                <!--
+                                                --><!--
                                         This appllies customized toggle button.
                                             <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
                                                 <!--<Expander IsExpanded="True"  Background="LightGray">
@@ -614,7 +692,7 @@
                                                 </StackPanel>
                                             </Expander.Header>
                                             <ItemsPresenter />
-                                        </Expander>-->
+                                        </Expander>--><!--
 
                                                 <StackPanel  Background="LightGray" >
                                                     <StackPanel.Resources>
@@ -643,7 +721,7 @@
                                         </Setter.Value>
                                     </Setter>
                                 </DataTrigger>
-                            </Style.Triggers>
+                            </Style.Triggers>-->
                         </Style>
                     </GroupStyle.ContainerStyle>
                 </GroupStyle>
@@ -816,17 +894,22 @@
             </DataGrid.RowDetailsTemplate>
 
         </DataGrid>
+        </Grid>
         <Grid Grid.Row="3"  
-              Margin="12, 0, 12, 12"             
+              Margin="12, 0, 12, 0"             
               Background="White" >
-            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" TextAlignment="Left"
+            <TextBlock 
+                Margin="0, 0, 0, 12"
+                Text="{Binding ErrorMessage}" TextWrapping="Wrap" TextAlignment="Left"
                         MaxHeight="120" Padding="8, 5, 8, 5"
                         VerticalAlignment="Bottom"
                         Background="White"
                         Foreground="Red"     
                         Visibility="{Binding Path=ProgressErrorMessageVisibility}"
                         />
-            <StackPanel Visibility="{Binding Path=CancelLoadingVisibility}"
+            <StackPanel 
+                Margin="0, 0, 0, 12"
+                Visibility="{Binding Path=CancelLoadingVisibility}"
                         Orientation="Horizontal" HorizontalAlignment="Center"
                         >
                 <TextBlock Text="{Binding LogLoddingProgress}" Padding="8, 5, 8, 5"

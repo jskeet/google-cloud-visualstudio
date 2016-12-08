@@ -219,6 +219,9 @@
     <Compile Include="SplitTrafficManagement\SplitTrafficWindowContent.xaml.cs">
       <DependentUpon>SplitTrafficWindowContent.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StackdriverLogsViewer\CustomCalendar.xaml.cs">
+      <DependentUpon>CustomCalendar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\ComplexPropertyMethodToValueConverter.cs" />
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JArrayLengthConverter.cs" />
     <Compile Include="StackdriverLogsViewer\JasonTypeConverter\JPropertyDataTemplateSelector.cs" />
@@ -654,6 +657,10 @@
     <Resource Include="StackdriverLogsViewer\LogDetailTreeView.xaml">
       <SubType>Designer</SubType>
     </Resource>
+    <Page Include="StackdriverLogsViewer\CustomCalendar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="StackdriverLogsViewer\JumpToLogDateTimePicker.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

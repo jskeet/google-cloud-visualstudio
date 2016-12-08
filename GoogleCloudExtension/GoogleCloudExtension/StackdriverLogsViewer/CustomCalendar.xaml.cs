@@ -12,21 +12,22 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using GoogleCloudExtension.StackdriverLogsViewer;
 
-namespace ShowLogUI
+namespace LogView
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for CustomCalendar.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class CustomCalendar : UserControl
     {
-        public MainWindow()
+        public CustomCalendar()
         {
             InitializeComponent();
-            var newModel = new LogsViewerViewModel();
-            logViewer.ViewModel = newModel;
-            newModel.LoadOnStartup();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

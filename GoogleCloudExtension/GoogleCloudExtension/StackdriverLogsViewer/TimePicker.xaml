@@ -19,10 +19,13 @@
                         <ControlTemplate.Resources>
                             <Style TargetType="TextBox">
                                 <Setter Property="MaxLength" Value="2" />
+                                <Setter Property="MinWidth" Value="2" />
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                <Setter Property="Padding" Value="2, 5, 2, 5" />
+                                <Setter Property="AcceptsReturn" Value="False" />
                             </Style>
                             <Style x:Key="SeparatorStyle" TargetType="ContentControl">
                                 <Setter Property="Focusable" Value="False"/>
@@ -154,6 +157,8 @@
     </UserControl.Resources>
 
    <Grid>
-        <local:TimePickerControl x:Name="pickerControl" Width="120" ControlTime="{Binding Path=Time}" />
+        <local:TimePickerControl x:Name="pickerControl" ControlTime="{Binding Path=Time}"
+                                 VerticalAlignment="Center"
+                                 />
     </Grid>
 </UserControl>
