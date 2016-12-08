@@ -545,7 +545,8 @@
                 <StackPanel  
                         Orientation="Horizontal"
                         >
-                <TextBlock Text="2016-12-8" Margin="12, 3, 3, 0" VerticalAlignment="Top"/>
+                    <TextBlock Text="{Binding Path=SelectedDate}" Margin="12, 3, 3, 0" VerticalAlignment="Top"
+                           />
                     <ComboBox x:Name="comboTimeZone" Margin="3, 0, 18, 0" VerticalAlignment="Top"
                              ToolTip="Click To Select Different Timezone"
                              BorderThickness="0"
@@ -786,7 +787,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Binding="{Binding Time,StringFormat='HH:mm:ss.fff'}" Width="100"/>
+                <DataGridTextColumn Binding="{Binding Time,StringFormat='HH:mm:ss.fff'}" Width="90"/>
 
                 <!--<DataGridTemplateColumn >
                     --><!--

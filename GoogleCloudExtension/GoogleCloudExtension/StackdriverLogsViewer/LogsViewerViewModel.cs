@@ -346,6 +346,21 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
             }
         }
+
+        internal LogItem SelectedEntry(int index)
+        {
+            if (_logs == null)
+            {
+                return null;
+            }
+
+            if (index < 0 || index >= _logs.Count)
+            {
+                return null;
+            }
+
+            return _logs.ElementAt<LogItem>(index);
+        }
     }
 
     /// <summary>
@@ -422,6 +437,32 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
+
+        private string _selectedDate = string.Empty;
+
+        public void SetSelectedChanged(int index)
+        {
+            if (index < 0)
+            {
+                return;
+            }
+
+            SelectedDate = LogEntriesViewModel.SelectedEntry(index)?.Date;
+        }
+        public string SelectedDate
+        {
+            get
+            {
+                return _selectedDate;
+            }
+            set
+            {
+                if (value != _selectedDate)
+                {
+                    SetValueAndRaise(ref _selectedDate, value);
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes the class.
@@ -707,6 +748,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     firstPage = false;
                     _nextPageToken = null;
                     LogEntriesViewModel.SetLogs(null, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
+                    SetSelectedChanged(0);
                 }
 
                 var results = await _dataSource.Value.ListLogEntriesAsync(filter, order, _defaultPageSize, _nextPageToken);

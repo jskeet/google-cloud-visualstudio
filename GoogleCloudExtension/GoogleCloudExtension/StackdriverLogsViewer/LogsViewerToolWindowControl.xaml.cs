@@ -42,7 +42,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private static readonly Lazy<ImageSource> s_refreshMouseDownImage =
             new Lazy<ImageSource>(() => ResourceUtils.LoadImage(RefreshMouseDownImagePath));
 
-        bool _do_logging = false;
+        bool _do_logging = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogsViewerToolWindowControl"/> class.
@@ -141,7 +141,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
 
             if (dg.SelectedIndex >= 0)
-            { 
+            {
+                ViewModel.SetSelectedChanged(dg.SelectedIndex);
+
                 DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
                 preSelected = row;
                 preSelectedRowInex = dg.SelectedIndex;
@@ -364,6 +366,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                         preSelected?.InvalidateMeasure();
                     }
 
+                    ViewModel.SetSelectedChanged(rowIndex);
                     //var preSelectedRow = SelectedRow();
                     object item = dg.Items[rowIndex];
                     dg.SelectedItem = item;
@@ -378,7 +381,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         // TODO: If the loading is cancelled in the middle, it is no longer scrollable.
         private void dtGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            var grid = sender as DataGrid;
+            var grid = sender as DataGrid;            
+
             //Debug.WriteLine($"dtGrid_ScrollChanged, sender is {grid.Name}");
             //if (e.VerticalChange != 0)
             //{
