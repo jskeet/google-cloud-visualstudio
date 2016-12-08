@@ -440,14 +440,15 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private string _selectedDate = string.Empty;
 
-        public void SetSelectedChanged(int index)
+        public void SetSelectedChanged(object item)
         {
-            if (index < 0)
+            var log = item as LogItem;
+            if ( log == null)
             {
                 return;
             }
 
-            SelectedDate = LogEntriesViewModel.SelectedEntry(index)?.Date;
+            SelectedDate = log.Date;
         }
         public string SelectedDate
         {

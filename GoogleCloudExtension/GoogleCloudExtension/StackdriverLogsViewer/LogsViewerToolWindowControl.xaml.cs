@@ -142,8 +142,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             if (dg.SelectedIndex >= 0)
             {
-                ViewModel.SetSelectedChanged(dg.SelectedIndex);
-
                 DataGridRow row = (DataGridRow)dg.ItemContainerGenerator.ContainerFromIndex(dg.SelectedIndex);
                 preSelected = row;
                 preSelectedRowInex = dg.SelectedIndex;
@@ -366,9 +364,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                         preSelected?.InvalidateMeasure();
                     }
 
-                    ViewModel.SetSelectedChanged(rowIndex);
                     //var preSelectedRow = SelectedRow();
                     object item = dg.Items[rowIndex];
+                    ViewModel.SetSelectedChanged(item);
                     dg.SelectedItem = item;
                     //preSelectedRow?.InvalidateVisual();
 

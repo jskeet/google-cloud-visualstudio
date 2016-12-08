@@ -21,7 +21,6 @@ using GoogleCloudExtension.ManageAccounts;
 using GoogleCloudExtension.PublishDialog;
 using GoogleCloudExtension.StackdriverLogsViewer;
 using GoogleCloudExtension.Utils;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
