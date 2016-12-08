@@ -352,20 +352,7 @@
             
             <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
             <!-- Advanced Filter -->
-            <Border Margin="0"
-                    Visibility="{Binding Path=AdvancedFilterVisibility}"
-                        BorderThickness="1" BorderBrush="LightGray"
-                        >
-                <Border.Resources>
-                    <Style TargetType="Border">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsInsideVS}" Value="True">
-                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.SearchBoxBorderKey}}" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Resources>
-                <Grid  Margin="0">
+            <Grid  Margin="0" Visibility="{Binding Path=AdvancedFilterVisibility}" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -376,7 +363,6 @@
                         TextWrapping="Wrap" AcceptsReturn="True"
                         Text="{Binding Path=AdvancedFilter}"
                         MinLines="3" MaxLines="100"  
-                              BorderThickness="0"
                         />
                     <StackPanel Grid.Column="1" Margin="6, 6, 0, 0"
                             HorizontalAlignment="Right"
@@ -403,7 +389,6 @@
                     </StackPanel>
 
                 </Grid>
-            </Border>
             <!-- Basic Filter -->
             <StackPanel Margin="0" Visibility="{Binding Path=BasicFilterVisibility}">
 
