@@ -202,12 +202,12 @@
                 <Style.Triggers>
                     <!-- http://stackoverflow.com/questions/3614837/wpf-style-trigger-for-datagridrow-background-color-trumped-by-alternatingrowback -->
                     <Trigger Property="AlternationIndex" Value="1">
-                        <Setter Property="Background" Value="AliceBlue"/>
+                        <Setter Property="Background" Value="#F5F5F5"/>
                     </Trigger>
 
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#F2A600" />
-                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="#FFFFD6" />
+                        <!--<Setter Property="Foreground" Value="White" />-->
                         <!--<Setter Property="IsSelected" Value="True" />-->
                     </Trigger>
                 </Style.Triggers>
