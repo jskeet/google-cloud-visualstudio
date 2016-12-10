@@ -200,9 +200,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
 
                 // _logSeverityList[0] is All Log Levels
-                if (_selectedLogSeverity != null && _selectedLogSeverity != _logSeverityList[0])
+                if (_selectedLogSeverity != null && _selectedLogSeverity != _logSeverityList.Last())
+                    //&& _selectedLogSeverity != _logSeverityList[0])                    
                 {
-                    filter.AppendLine($"severity={_selectedLogSeverity}");
+                    filter.AppendLine($"severity>={_selectedLogSeverity}");
                 }
 
                 if (!string.IsNullOrWhiteSpace(_logNameFilter?.Filter))
@@ -593,9 +594,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
 
         #region Log Severity Filter ComboBox
-        private string _selectedLogSeverity;
+        private string _selectedLogSeverity = "Any Log Level";
         private string[] _logSeverityList = 
-            new string[] {"Any Log Level", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" };
+            new string[] { "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "Any Log Level" };
         public IEnumerable<string> LogSeverityList => _logSeverityList;
         public string SelectedLogSeverity
         {

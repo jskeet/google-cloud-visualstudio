@@ -526,7 +526,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             if (SelectedResource != null)
             {
                 // Reload();
-                FilterOutResource();
+                // FilterOutResource();
             }
             else
             {
