@@ -21,9 +21,9 @@
     <UserControl.Resources>
 
         <ResourceDictionary>
-                <ResourceDictionary.MergedDictionaries>
-                    <ResourceDictionary Source="../Theming/CommonResources.xaml" />
-                </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Theming/CommonResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
             <BitmapImage x:Key="GoogleLogo" UriSource="logo_cloud_128.png" />
 
@@ -33,7 +33,7 @@
             <valueConverters:JPropertyTypeToColorConverter x:Key="JPropertyTypeToColorConverter"/>
             <valueConverters:JValueTypeToColorConverter x:Key="JValueTypeToColorConverter"/>
             <valueConverters:JArrayLengthConverter x:Key="JArrayLengthConverter"/>
-            
+
             <HierarchicalDataTemplate x:Key="KeyValuePairJObject"  
                                       ItemsSource="{Binding Value}">
                 <StackPanel Orientation="Horizontal" Margin="1">
@@ -41,7 +41,7 @@
                     <TextBlock Text=": "  Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
-            
+
             <DataTemplate x:Key="KeyValuePair">
                 <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBlock Text="{Binding Path=Key}"   Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
@@ -141,7 +141,7 @@
                                     <ContentPresenter />
                                 </Border>
                             </Border>
-                               <!--<ControlTemplate.Triggers>  
+                            <!--<ControlTemplate.Triggers>  
                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="true">
                                     <Setter TargetName="border" Property="Background" Value="#F2A600"/>
                                 </DataTrigger>
@@ -220,17 +220,12 @@
             </Style>-->
 
             <ControlTemplate x:Key="FilterSwitchButton" TargetType="{x:Type Button}">
-                <Button Grid.Column="1" HorizontalAlignment="Left"
+                <Button Style="{StaticResource CommonButtonDynamicStyle}"
                     ToolTip="{Binding Path=FilterSwitchButtonContent}"
                                     Command="{Binding Path=FilterSwitchCommand}"
-                                        Padding="3" BorderThickness="0"
-                                        Background="White"
-                        VerticalAlignment="Bottom"
                                     >
-                    <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
-                                    Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <ContentPresenter />
                 </Button>
-
             </ControlTemplate>
 
 
@@ -290,13 +285,13 @@
                 <!--<Setter Property="Background" Value="Olive" />-->
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
             </Style>
-            
+
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Background="White" >
         <Grid.Resources>
-        <!--<Style TargetType="TextBlock">
+            <!--<Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
         </Style>-->
         </Grid.Resources>
@@ -306,7 +301,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto"  />
         </Grid.RowDefinitions>
-        
+
         <!-- Logo project account -->
         <StackPanel Margin="0, 0, 0, 6" Style="{StaticResource CommandBarStyle}"
                     >
@@ -320,7 +315,8 @@
                 <Image Source="{Binding Path=CloudLogo}" Height="25" HorizontalAlignment="Left" Margin="0, 0, 0, 2"/>
             </Border>
             <Border BorderThickness="0, 0, 0, 1" BorderBrush="LightGray" >
-                --><!-- The trigger works, but I don't need it.
+                -->
+            <!-- The trigger works, but I don't need it.
                 <Border.Resources>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -332,7 +328,8 @@
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="14" />
                     </Style>
-                </Border.Resources>--><!--
+                </Border.Resources>-->
+            <!--
                 <StackPanel Orientation="Horizontal" Margin="2, 3, 0, 5"  >
                     <TextBlock Text="Project  :" VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding Path=Project}" VerticalAlignment="Center" Margin="3, 0, 0, 0"/>
@@ -344,51 +341,51 @@
         </StackPanel>
 
         <!-- Filters -->
-        <StackPanel Grid.Row="1" Margin="12, 6, 12, 6"  DataContext="{Binding Path=FilterViewModel}"
+        <StackPanel Grid.Row="1" Margin="12, 6, 12, 6"  
                     VerticalAlignment="Center" 
                     HorizontalAlignment="Stretch"
                     Orientation="Vertical"
+                    Background="White"
               >
-            
+
             <!--<Grid  Width="{Binding ActualWidth, ElementName=BasicFilters}"-->
             <!-- Advanced Filter -->
-            <Grid  Margin="0" Visibility="{Binding Path=AdvancedFilterVisibility}" >
+            <StackPanel Visibility="{Binding Path=AdvancedFilterVisibility}" Margin="0">
+                <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                    <TextBox  Grid.Column="0" Margin="0, 0, 6, 0"
+                    <TextBox  Grid.Column="0" Grid.Row="0" Margin="0, 0, 0, 0"
                         VerticalAlignment="Center" Padding="8, 5, 8, 5"
                         TextWrapping="Wrap" AcceptsReturn="True"
                         Text="{Binding Path=AdvancedFilter}"
                         MinLines="3" MaxLines="100"  
                         />
-                    <StackPanel Grid.Column="1" Margin="6, 6, 0, 0"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            >
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                Margin="0, 0, 0, 3"
-                                >
-                            <Button  Template="{StaticResource FilterSwitchButton}" />
-                            <Button Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    <Button Grid.Column="0" Grid.Row="1" Margin="0, 1, 3, 0"
+                        Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top"
                                 ToolTip="{Binding Path=AdvancedFilterHelpMessage}" 
                                 Command="{Binding Path=AdvancedFilterHelpCommand}"
-                                BorderThickness="0"   Margin="6, 0, 0, 0"
-                                 >
-                                <Image x:Name="questionMark" Source="{Binding Path=FilterHelpImage}"  Width="16" Height="16" />
-                            </Button>
-                        </StackPanel>
-                        <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
-                            Margin="0, 3, 6, 6"
-                            VerticalAlignment="Bottom" HorizontalAlignment="Left"
-                            Style="{StaticResource CommonButtonStandardStyle}"
-                            Content="Sumit Filter" 
-                            />
-                    </StackPanel>
-
+                                BorderThickness="0"   
+                                    >
+                        <Image x:Name="questionMark" Source="{Binding Path=FilterHelpImage}"  Width="16" Height="16" />
+                    </Button>
+                    <Button Grid.Column="1" Grid.Row="0" Margin="12,0,0,0" Template="{StaticResource FilterSwitchButton}"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom">To Simple Filter</Button>
                 </Grid>
+
+                <Button Grid.Column="1" Command="{Binding Path=SubmitAdvancedFilterCommand}" 
+                        Margin="0, -6, 6, 6"
+                        VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                        Style="{StaticResource CommonButtonStandardStyle}"
+                        Content="Sumit Filter" 
+                        />
+            </StackPanel>
             <!-- Basic Filter -->
             <StackPanel Margin="0" Visibility="{Binding Path=BasicFilterVisibility}">
 
@@ -403,7 +400,7 @@
                             <Setter Property="Margin" Value="0, 0, 6, 0" />
                             <Setter Property="Padding" Value="8, 5, 8, 5" />
                         </Style>
-                        
+
                     </StackPanel.Resources>
                     <ComboBox Name="comboResource" Width="160" 
                           ToolTip="{Binding Path=ResourcesComboBoxTip}"
@@ -420,7 +417,7 @@
                         </ComboBox.ItemContainerStyle>
                     </ComboBox>
 
-                <ComboBox Name="comboLogID" Width="160"
+                    <ComboBox Name="comboLogID" Width="160"
                           ItemsSource="{Binding Path=LogIDs,Mode=OneWay}"
                           SelectedItem="{Binding Path=SelectedLogID,Mode=TwoWay}"
                           Loaded="ComboBox_Loaded"
@@ -432,7 +429,7 @@
                           Loaded="ComboBox_Loaded"
                               VerticalAlignment="Center"
                           />
-                    <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}" 
+                    <viewer:JumpToLogDateTimePicker DataContext="{Binding Path=DateTimePickerViewModel}"                                                     
                                                 Margin="0, 0, 6, 0"/>
 
                     <Button Grid.Column="1"
@@ -461,48 +458,61 @@
                         <Image x:Name="refreshImage" Width="32" Height="32" Margin="-1"/>
                     </Button>
                 </StackPanel>
-                <Border Margin="0, 6, 0, 0"
-                        BorderThickness="1" BorderBrush="LightGray"
-                        >
-                    <Border.Resources>
-                        <Style TargetType="Border">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=IsInsideVS}" Value="True">
-                                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.SearchBoxBorderKey}}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Resources>
-                <Grid >
+
+                <!-- Text search box -->
+                <Grid Margin="0, 6, 0, 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Margin="0" 
+                    <Border Grid.Column="0"
+                        BorderThickness="1" BorderBrush="LightGray"
+                        >
+                        <Border.Resources>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsInsideVS}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.SearchBoxBorderKey}}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Resources>
+                        <Grid x:Name="SimpleTextSearchPanel">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Margin="0" 
                              BorderThickness="0"
                              x:Name="txtMessage" TextWrapping="Wrap"                                             
                              Padding="8, 5, 8, 5"
                              Text="{Binding MessageFilter,UpdateSourceTrigger=PropertyChanged,Mode=OneWayToSource}"                                               
                              Style="{StaticResource WartermarkedTextBox}"
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Center"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center" Width="698"
                              >
-                    </TextBox>
-                    <Button Grid.Column="1"
+                            </TextBox>
+                            <Button Grid.Column="1" Margin="2, 0, 2, 0"
                             Background="Transparent"
                             BorderThickness="0"
-                        HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Image Source="{Binding Path=SearchIcon}" Height="13" Width="13" />
-                    </Button>
-                        <Button Grid.Column="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    ToolTip="Apply filter on server and fetch more."
+                                    Command="{Binding Path=SimpleTextFilterCommand}"
+                                    >
+                                <Image Source="{Binding Path=SearchIcon}" Height="13" Width="13" />
+                            </Button>
+                            <!--<Button Grid.Column="2"
                     Template="{StaticResource FilterSwitchButton}" 
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Margin="0,0,1,0"
-                        />
-                    </Grid>
-                </Border>
+                        />-->
+                        </Grid>
+                    </Border>
+                    <Button Grid.Column="1" Margin="12,0,0,0"
+                            Template="{StaticResource FilterSwitchButton}"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom">To Advanced Filter</Button>
+                </Grid>
             </StackPanel>
             <!--<ComboBox x:Name="comboFilterSwitch" HorizontalAlignment="Center" SelectedIndex="0" 
                                VerticalAlignment="Center" 
@@ -526,38 +536,45 @@
 
         <Grid Grid.Row="2" Margin="12, 6, 12, 12">
 
-            <Border Background="Transparent" Panel.ZIndex="20" HorizontalAlignment="Right"  VerticalAlignment="Top" >
-                <StackPanel  
-                        Orientation="Horizontal"
+            <!--Right under the header, set top margin to 19 (18 + border 1)-->
+            <Border Background="LightGray" Panel.ZIndex="20" HorizontalAlignment="Stretch"  VerticalAlignment="Top" 
+                    Margin="0, 19, 0, 0"  
+                    >
+                <DockPanel  Margin="9, 1, 0, 1" 
                         >
-                    <TextBlock Text="{Binding Path=SelectedDate}" Margin="12, 3, 3, 0" VerticalAlignment="Top"
+                    <DockPanel.Resources>
+                        <Style TargetType="TextBlock" >
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Style>
+                    </DockPanel.Resources>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="{Binding Path=FirstRowDate}" Margin="0, 5, 3, 5" VerticalAlignment="Center"
                            />
-                    <ComboBox x:Name="comboTimeZone" Margin="3, 0, 18, 0" VerticalAlignment="Top"
+                        <ComboBox x:Name="comboTimeZone" Margin="3, 0, 18, 0" VerticalAlignment="Center"
                              ToolTip="Click To Select Different Timezone"
                              BorderThickness="0"
                                SelectedIndex="0"
                                Background="Transparent"
                               Loaded="ComboBox_Loaded"
+                              ItemsSource="{Binding Path=SystemTimeZones}"
+                              SelectedItem="{Binding Path=SelectedTimeZone}"
                              >
-                        <ComboBoxItem>PST</ComboBoxItem>
-                        <ComboBoxItem>Noew York Time</ComboBoxItem>
-                        <ComboBoxItem>Some other</ComboBoxItem>
-                        <ComboBoxItem>London Time</ComboBoxItem>
-                        <ComboBoxItem>BeijingTime</ComboBoxItem>
-                    </ComboBox>
-                    <Expander x:Name="allExpander"                       
+                        </ComboBox>
+                    </StackPanel>
+                    <Expander DockPanel.Dock="Right" x:Name="allExpander"       
+                             Margin="0, 0, 8, 0"                            
                       HorizontalAlignment="Right"
-                      VerticalAlignment="Top"
+                      VerticalAlignment="Center"
                       IsExpanded="False" 
                                   ToolTip="Toggle All Log Entries Detail View"
                                   Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"                                 
                                   >
-                <Expander.LayoutTransform >
-                    <ScaleTransform ScaleX="1" ScaleY="1"></ScaleTransform>
-                </Expander.LayoutTransform>
+                        <Expander.LayoutTransform >
+                            <ScaleTransform ScaleX="1" ScaleY="1"></ScaleTransform>
+                        </Expander.LayoutTransform>
 
-            </Expander>
-            </StackPanel>
+                    </Expander>
+                </DockPanel>
             </Border>
 
             <DataGrid 
@@ -571,7 +588,6 @@
                   CellStyle="{StaticResource cellStyle}"
                   AutoGenerateColumns="False"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="Column"     
-                  DataContext="{Binding Path=LogEntriesViewModel}"
                   ItemsSource="{Binding Path=LogEntryList}" 
                   Background="White"
                   BorderThickness="1"
@@ -584,20 +600,24 @@
                   ScrollViewer.ScrollChanged="dtGrid_ScrollChanged"
                   ColumnHeaderHeight="18"
                  >
-            <!--  AlternatingRowBackground="AliceBlue" -->
-            <!--<DataGrid.Resources>
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
+                   Color="Black"/>
+                </DataGrid.Resources>
+                <!--  AlternatingRowBackground="AliceBlue" -->
+                <!--<DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="DarkGray"/>
             </DataGrid.Resources>-->
-            <!--<DataGrid.Resources>
+                <!--<DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
                    Color="#FF0000"/>
             </DataGrid.Resources>-->
 
-            <!--                   
+                <!--                   
                 AreRowDetailsFrozen="True" 
             -->
 
-            <!--
+                <!--
             <DataGrid.Style>
                 <Style TargetType="DataGridDetailsPresenter">
                     <Setter TargetName="" ></Setter>
@@ -614,24 +634,24 @@
             </DataGrid.Style>
                 -->
 
-            <DataGrid.GroupStyle>
-                <GroupStyle>
-                    <!-- <GroupStyle.HeaderTemplate>
+                <DataGrid.GroupStyle>
+                    <GroupStyle>
+                        <!-- <GroupStyle.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel>
                                 <TextBlock Text="{Binding Path=City}" FontWeight="Bold" Padding="3"/>
                             </StackPanel>
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>  -->
-                    <GroupStyle.ContainerStyle>
-                        <Style TargetType="{x:Type GroupItem}">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <!--
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <!--
                                         This appllies customized toggle button.
                                             <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
-                                        <!--<Expander IsExpanded="True"  Background="LightGray">
+                                            <!--<Expander IsExpanded="True"  Background="LightGray">
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
                                                         <TextBlock Text="{Binding Path=Name}" />
@@ -642,23 +662,23 @@
                                             <ItemsPresenter />
                                         </Expander>-->
 
-                                        <StackPanel  Background="LightGray" >
-                                            <StackPanel.Resources>
-                                                <Style TargetType="TextBlock" >
-                                                    <Setter Property="FontWeight" Value="Bold" />
-                                                </Style>
-                                            </StackPanel.Resources>
-                                            <StackPanel Orientation="Horizontal" Margin="9, 1, 0, 1" >
-                                                <TextBlock Text="{Binding Path=Name}"  Padding="0, 5, 4, 5" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Padding="4, 5, 2, 5"/>
-                                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)" Padding="0, 5, 8, 5"/>
+                                            <StackPanel  Background="LightGray" >
+                                                <StackPanel.Resources>
+                                                    <Style TargetType="TextBlock" >
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                    </Style>
+                                                </StackPanel.Resources>
+                                                <StackPanel Orientation="Horizontal" Margin="9, 1, 0, 1" >
+                                                    <TextBlock Text="{Binding Path=Name}"  Padding="0, 5, 4, 5" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=ItemCount}" Padding="4, 5, 2, 5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Element(s)" Padding="0, 5, 8, 5"/>
+                                                </StackPanel>
+                                                <ItemsPresenter />
                                             </StackPanel>
-                                            <ItemsPresenter />
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <!--
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <!--
                             Adding button on first group won't help.  When user scroll down, the button is hidden.
                             The trigger works 
                             <Style.Triggers>
@@ -666,10 +686,11 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                --><!--
+                                                -->
+                                <!--
                                         This appllies customized toggle button.
                                             <Expander IsExpanded="True" Template="{StaticResource SimpleExpanderTemp}">-->
-                                                <!--<Expander IsExpanded="True"  Background="LightGray">
+                                <!--<Expander IsExpanded="True"  Background="LightGray">
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1">
                                                         <TextBlock Text="{Binding Path=Name}" />
@@ -678,7 +699,8 @@
                                                 </StackPanel>
                                             </Expander.Header>
                                             <ItemsPresenter />
-                                        </Expander>--><!--
+                                        </Expander>-->
+                                <!--
 
                                                 <StackPanel  Background="LightGray" >
                                                     <StackPanel.Resources>
@@ -708,16 +730,18 @@
                                     </Setter>
                                 </DataTrigger>
                             </Style.Triggers>-->
-                        </Style>
-                    </GroupStyle.ContainerStyle>
-                </GroupStyle>
-            </DataGrid.GroupStyle>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+                    </GroupStyle>
+                </DataGrid.GroupStyle>
 
-            <DataGrid.Columns>
-                <!--<DataGridTemplateColumn>
-                    --><!-- TODO:  fix the button binding ToggleExpandAllCommand problem
+                <DataGrid.Columns>
+                    <!--<DataGridTemplateColumn>
+                    -->
+                    <!-- TODO:  fix the button binding ToggleExpandAllCommand problem
                                 Because the DataSource is set to LogEntryList
-                    --><!--
+                    -->
+                    <!--
                     <DataGridTemplateColumn.Header>
                         <Button Content="E H" Name="btnExpandAll" Click="btnExpandAll_Click" />
                     </DataGridTemplateColumn.Header>
@@ -732,18 +756,22 @@
                                       >
                             </Expander>
 
-                            --><!-- <Button Click="ShowHideDetails">Details</Button> --><!--
+                            -->
+                    <!-- <Button Click="ShowHideDetails">Details</Button> -->
+                    <!--
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>-->
 
-                <!--<DataGridTextColumn Binding="{Binding SeverityLevel}"  >
+                    <!--<DataGridTextColumn Binding="{Binding SeverityLevel}"  >
                 </DataGridTextColumn>-->
 
-                <!-- Log Level -->
-                <DataGridTemplateColumn IsReadOnly="True">
-                    <!--<DataGridTemplateColumn.Header>
-                        --><!--<TextBlock >a</TextBlock>--><!--
+                    <!-- Log Level -->
+                    <DataGridTemplateColumn IsReadOnly="True">
+                        <!--<DataGridTemplateColumn.Header>
+                        -->
+                        <!--<TextBlock >a</TextBlock>-->
+                        <!--
                         <Expander x:Name="allExpander" IsExpanded="False" 
                                   ToolTip="Toggle All Log Entries Detail View"
                                   Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"
@@ -754,28 +782,31 @@
                             </Expander.LayoutTransform>
 
                         </Expander>
-                        --><!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
+                        -->
+                        <!--<Button  ToolTip="Exapand All" Click="btnExpandAll_Click"           
                                      Padding="6" BorderThickness="1" 
                                  
                                  >
                             <Path Data="M0,0L3.5,4 7,0z" Fill="#FF000000" Name="Arrow"
                                     Margin="3,1,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Button>--><!--
+                        </Button>-->
+                        <!--
 
                     </DataGridTemplateColumn.Header>-->
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="9, 1, 8, 1" 
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding Path=SeverityLevel}" Width="12" Margin="9, 1, 8, 1" 
                                    ToolTip="{Binding Path=SeverityTip}"
                                    />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
-                <DataGridTextColumn Binding="{Binding Time,StringFormat='HH:mm:ss.fff'}" Width="90"/>
+                    <DataGridTextColumn Binding="{Binding Time,StringFormat='HH:mm:ss.fff'}" Width="90"/>
 
-                <!--<DataGridTemplateColumn >
-                    --><!--
+                    <!--<DataGridTemplateColumn >
+                    -->
+                    <!--
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -784,30 +815,33 @@
                                 <TextBox x:Name="txtTime" Width="100" TextChanged="TextChanged"  />
                             </StackPanel>
                         </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>--><!--
+                    </DataGridTextColumn.HeaderTemplate>-->
+                    <!--
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock  Text="{Binding Time,StringFormat='HH:mm:ss.fff'}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>-->
-                
-                
-                <DataGridTextColumn Binding="{Binding Message}"
+
+
+                    <DataGridTextColumn Binding="{Binding Message}"
                                 Header="Message">
-                    <DataGridTextColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <!--<TextBlock Text="{Binding Content, RelativeSource=
+                        <DataGridTextColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <!--<TextBlock Text="{Binding Content, RelativeSource=
                                          {RelativeSource Mode=TemplatedParent}}"/>-->
-                                <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
-                                <!--<TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
+                                    <!-- TextBox x:Name="txtMessage" Width="150" TextChanged="TextChanged"  /-->
+                                    <!--<TextBox x:Name="txtMessage" Width="500" TextWrapping="Wrap"
                                          Margin="50, 0, 0, 0" FontSize="14"
                                          Padding="0, 1, 0, 1"
                                          Text="{Binding DataContext.MessageFilter,UpdateSourceTrigger=PropertyChanged,
                                                 Mode=OneWayToSource,
                                                RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"  >
-                                    --><!-- Watermark background --><!--
+                                    -->
+                                    <!-- Watermark background -->
+                                    <!--
                                     <TextBox.Style>
                                         <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
                                             <Style.Resources>
@@ -831,55 +865,55 @@
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>-->
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTextColumn.HeaderTemplate>
+                    </DataGridTextColumn>
 
-            </DataGrid.Columns>
+                </DataGrid.Columns>
 
-            <DataGrid.RowDetailsTemplate>
-                <DataTemplate>
-                    <!-- Is Border necessary ?  Leave it for now
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <!-- Is Border necessary ?  Leave it for now
                     -->
-                    <Border BorderThickness="0" Background="White" Padding="30, 0, 0 , 0" Margin="0" >
-                        <TreeView Name="ResultTreeView" BorderThickness="0" 
+                        <Border BorderThickness="0" Background="White" Padding="30, 0, 0 , 0" Margin="0" >
+                            <TreeView Name="ResultTreeView" BorderThickness="0" 
                                   ItemsSource="{Binding Converter={StaticResource LogItemConverter}}"
                                   ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}"   
                                   Foreground="Brown"
                                   >
-                            <TreeView.Template>
-                                <ControlTemplate>
-                                    <ItemsPresenter />
-                                </ControlTemplate>
-                            </TreeView.Template>
-                            <TreeView.ItemContainerStyle>
-                                <Style TargetType="{x:Type TreeViewItem}" >
-                                    <Setter Property="IsExpanded" Value="True" />
-                                    <Setter Property="Foreground" Value="DarkSlateGray" />
-                                </Style>
-                            </TreeView.ItemContainerStyle>
-                            <TreeView.Resources>
-                                <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
-                                    <StackPanel Orientation="Horizontal" >
-                                        <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
-                                        <TextBlock Text=":" Padding="3, 0, 3, 1"   Margin="0,0,5,0" Visibility="{Binding ValueVisibility}"/>
-                                        <TextBlock Text="{Binding Path=DisplayValue}"/>
-                                    </StackPanel>
-                                </HierarchicalDataTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type viewer:Payload}" ItemsSource="{Binding Path=Value}">
-                                    <StackPanel Orientation="Horizontal" >
-                                        <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0" />
-                                    </StackPanel>
-                                </HierarchicalDataTemplate>
-                            </TreeView.Resources>
-                        </TreeView>
+                                <TreeView.Template>
+                                    <ControlTemplate>
+                                        <ItemsPresenter />
+                                    </ControlTemplate>
+                                </TreeView.Template>
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="{x:Type TreeViewItem}" >
+                                        <Setter Property="IsExpanded" Value="True" />
+                                        <Setter Property="Foreground" Value="DarkSlateGray" />
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.Resources>
+                                    <HierarchicalDataTemplate DataType="{x:Type viewer:ObjectNode}" ItemsSource="{Binding Path=Children}">
+                                        <StackPanel Orientation="Horizontal" >
+                                            <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0"/>
+                                            <TextBlock Text=":" Padding="3, 0, 3, 1"   Margin="0,0,5,0" Visibility="{Binding ValueVisibility}"/>
+                                            <TextBlock Text="{Binding Path=DisplayValue}"/>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                    <HierarchicalDataTemplate DataType="{x:Type viewer:Payload}" ItemsSource="{Binding Path=Value}">
+                                        <StackPanel Orientation="Horizontal" >
+                                            <TextBlock Text="{Binding Path=Name}" Padding="3, 0, 3, 1"   Margin="0,0,5,0" />
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.Resources>
+                            </TreeView>
 
-                    </Border>
-                </DataTemplate>
-            </DataGrid.RowDetailsTemplate>
+                        </Border>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
 
-        </DataGrid>
+            </DataGrid>
         </Grid>
         <Grid Grid.Row="3"  
               Margin="12, 0, 12, 0"             

@@ -15,22 +15,20 @@
 
             <Style x:Key="StyleCalanderDayButton" TargetType="{x:Type CalendarDayButton}">
 
-                <Setter Property="Height" Value="40"></Setter>
+                <Setter Property="Height" Value="32"></Setter>
 
-                <Setter Property="Width" Value="40"></Setter>
-                <Setter Property="FontSize" Value="16" />
+                <Setter Property="Width" Value="32"></Setter>
+                <Setter Property="FontSize" Value="12" />
 
             </Style>
 
             <Style x:Key="StyleCalanderButton" TargetType="{x:Type CalendarButton}">
 
-                <Setter Property="Height" Value="60"></Setter>
+                <Setter Property="Height" Value="52"></Setter>
 
-                <Setter Property="Width" Value="60"></Setter>
+                <Setter Property="Width" Value="52"></Setter>
 
                 <Setter Property="FontWeight" Value="Normal"/>
-
-
             </Style>
 
             <DataTemplate x:Key="DayTitle"  >
@@ -43,6 +41,7 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" />
             </DataTemplate>
+
 
             <Style x:Key="StyleCalendar" TargetType="{x:Type Calendar}">
 
@@ -79,6 +78,7 @@
                 <Setter Property="CalendarButtonStyle"  Value="{StaticResource StyleCalanderButton}"></Setter>
 
                 <Setter Property="Foreground" Value="#FF333333"/>
+                <Setter Property="IsTodayHighlighted" Value="False" />
 
                 <!--<Setter Property="Background">
 
@@ -107,7 +107,7 @@
             
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid >
         <ComboBox  x:Name="comboPickTime"
                     HorizontalAlignment="Center" 
                            VerticalAlignment="Center"
@@ -155,7 +155,6 @@
                                 </Style>
                             </Button.Style>
 
-                            <StackPanel>
                                 <!--<ItemsControl ItemsSource="{Binding OrderRadioGroup}" Margin="0, 2, 0, 2"
                      BorderThickness="0, 1, 0, 1" BorderBrush="LightGray">
                                     <ItemsControl.ItemsPanel>
@@ -171,98 +170,118 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>-->
-                                <Grid Margin="0,0,0,0">
+                            <Grid Margin="0,0,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="12, 12, 12, 6" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
                                     </Grid.RowDefinitions>
-                                    <StackPanel Grid.Row="0" 
-                     Margin="12, 12, 12, 6"
-                     >
-                                        <UniformGrid Rows="1" Columns="2">
-                                            <TextBlock Text="Date:"  Margin="0, 0, 6, 5"/>
-                                            <TextBlock Text="Time:" Margin="6, 0, 0, 5" />
-                                        </UniformGrid>
-                                        <UniformGrid Rows="1" Columns="2">
-                                            <TextBox Text="{Binding Path=Date,StringFormat=d}" 
-                     Margin="0, 0, 6, 0" 
-                     IsEnabled="False"
-                     Width="145"
-                     HorizontalAlignment="Left"
-                     VerticalAlignment="Center"
-                     Padding="8, 5, 8, 5"
-                     />
-                                            <time:TimePicker Margin="6, 0, 0, 0" 
-                             HorizontalAlignment="Left"
-                             VerticalAlignment="Center"        
-                             Width="145"
-                             />
-                                        </UniformGrid>
-                                    </StackPanel>
-                                    <Calendar Grid.Row="1" 
+                                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Date:"  Margin="0, 0, 6, 5"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="0" Text="Time:" Margin="6, 0, 0, 5" />
+                                    <TextBox Grid.Column="0" Grid.Row="1"
+                                Text="{Binding Path=UiElementDate,StringFormat=MM-dd-yyyy}" 
+                                        Margin="0, 0, 6, 0" 
+                                        IsEnabled="False"
+                                        Width="90"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Padding="8, 5, 8, 5"
+                                        />
+                                    <time:TimePicker Margin="6, 0, 0, 0" Grid.Column="1" Grid.Row="1" 
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"        
+                                    Width="145"
+                                    />
+                                </Grid>
+
+                                <Calendar Grid.Row="1" 
                   Margin="12, 4, 12, 4"
                   x:Name="calendar" HorizontalAlignment="Center"
-                                        SelectedDate="{Binding Path=Date}"
+                                        SelectedDate="{Binding Path=UiElementDate}"
                                         SelectionMode="SingleDate"
                                             Style="{StaticResource StyleCalendar}"
+                                          IsTodayHighlighted="False"
                                             >
-                                    </Calendar>
+                                </Calendar>
 
-                                    <ToggleButton Grid.Row="2"
+                                <StackPanel Orientation="Horizontal" Margin="12, 6, 12, 6" HorizontalAlignment="Stretch"
+                    Grid.Row="2"
+                    >
+
+                                    <TextBlock Text="Get log" Margin="0, 0, 6, 0" VerticalAlignment="Center" />
+                                    <ComboBox VerticalAlignment="Center" 
+                                              SelectedIndex="{Binding Path=SelectedOrderIndex}"
+                                              >
+                                        <ComboBoxItem>before</ComboBoxItem>
+                                        <ComboBoxItem>after</ComboBoxItem>
+                                    </ComboBox>
+                                    <TextBlock Text="this time stamp" Margin="6, 0, 0, 0" VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                                <!--<ToggleButton Grid.Row="2"
                       Margin="12, 6, 12, 6"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Center"
                       >
-                                        <ToggleButton.Style>
-                                            <Style TargetType="{x:Type ToggleButton}">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                                            <Grid>
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="Auto"/>
-                                                                    <ColumnDefinition Width="Auto"/>
-                                                                    <ColumnDefinition Width="*"/>
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="Click To Switch" Margin="0, 0, 12, 0" Grid.Column="1" />
-                                                                <TextBlock Name="Text" Text="Get log after this time stamp" Grid.Column="2"
+            <ToggleButton.Style>
+                <Style TargetType="{x:Type ToggleButton}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Click To Switch" Margin="0, 0, 12, 0" Grid.Column="1" />
+                                    <TextBlock Name="Text" Text="Get log after this time stamp" Grid.Column="2"
                                                HorizontalAlignment="Right" />
-                                                                <Image Name="Image" Grid.Column="0" 
+                                    <Image Name="Image" Grid.Column="0" 
                                            Margin="0, 0, 3, 0"
                                            Height="13" Width="13"
                                            Source="pack://application:,,,/GoogleCloudExtension;component/StackdriverLogsViewer/Resources/shuffle.png" 
                                            />
-                                                            </Grid>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsChecked" Value="True">
-                                                                    <Setter TargetName="Text" Property="Text" Value="Get log before this time stamp" />
-                                                                    <Setter TargetName="Image" Property="Source" Value="pack://application:,,,/GoogleCloudExtension;component/StackdriverLogsViewer/Resources/shuffle.png" />
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </ToggleButton.Style>
-                                    </ToggleButton>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter TargetName="Text" Property="Text" Value="Get log before this time stamp" />
+                                        <Setter TargetName="Image" Property="Source" Value="pack://application:,,,/GoogleCloudExtension;component/StackdriverLogsViewer/Resources/shuffle.png" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ToggleButton.Style>
+        </ToggleButton>-->
 
-                                    <StackPanel Grid.Row="3" 
+                                <StackPanel Grid.Row="3" 
                     Margin="12, 6, 0, 12"
                     Orientation="Horizontal" Grid.RowSpan="2" >
-                                        <!--Click="OK_Button_Click"-->
-                                        <Button Content="Go" HorizontalAlignment="Left" 
+                                    <!--Click="OK_Button_Click"-->
+                                    <Button Content="Go" HorizontalAlignment="Left" 
                                         Style="{StaticResource CommonButtonStandardStyle}"        
                                         Command="{Binding Path=OKCommand}"
                                         Width="35"
                                         Margin="0, 0, 6, 0"/>
-                                        <Button Content="Cancel" HorizontalAlignment="Left" Click="Cancel_Button_Click"
+                                    <Button Content="Cancel" HorizontalAlignment="Left" Click="Cancel_Button_Click"
                                         Style="{StaticResource CommonButtonStandardStyle}"                                                    
                                         />
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
+                                </StackPanel>
+                            </Grid>
 
                         </Button>
                             

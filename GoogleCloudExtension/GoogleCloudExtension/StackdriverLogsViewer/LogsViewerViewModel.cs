@@ -67,15 +67,19 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         private DateTime _timestamp;
         private string _message;
-
-        public LogItem(LogEntry logEntry)
+        public LogItem(LogEntry logEntry, TimeZoneInfo timeZone)
         {
             Entry = logEntry;
-            ConvertTimestamp(logEntry.Timestamp);
+            ConvertTimestamp(logEntry.Timestamp, timeZone);
             _message = ComposeMessage();
         }
-        
-        public string Date => _timestamp.ToShortDateString();
+
+        public void ChangeTimeZone(TimeZoneInfo newTimeZone)
+        {
+            _timestamp = TimeZoneInfo.ConvertTime(_timestamp, newTimeZone);
+        }
+
+        public string Date => _timestamp.ToString("MM-dd-yyyy");
         public DateTime Time => _timestamp;
         public LogEntry Entry { get; private set; }
 
@@ -184,7 +188,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
 
-        private void ConvertTimestamp(object timestamp)
+        private void ConvertTimestamp(object timestamp, TimeZoneInfo timeZone)
         {
             if (timestamp == null)
             {
@@ -204,7 +208,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
             }
 
-            _timestamp = _timestamp.ToLocalTime();
+            _timestamp = TimeZoneInfo.ConvertTime(_timestamp, timeZone);
         }
 
     }
@@ -227,146 +231,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         #endregion
     }
 
-
-    public class LogEntriesViewModel : ViewModelBase
-    {
-        private ObservableCollection<LogItem> _logs = new ObservableCollection<LogItem>();
-        ListCollectionView _collectionView;
-        private Object _collectionViewLock = new Object();
-        private string _filter;
-
-        private const string ShuffleIconPath = "StackdriverLogsViewer/Resources/shuffle.png";
-        private static readonly Lazy<ImageSource> s_shuffle_icon =
-            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ShuffleIconPath));
-        public ImageSource ShuffleImage => s_shuffle_icon.Value;
-
-        public LogEntriesViewModel()
-        {
-        }
-
-        public event EventHandler MessageFilterChanged;
-
-        /// <summary>
-        /// Append a set of log entries.
-        /// </summary>
-        public void AddLogs(IList<LogEntry> logEntries)
-        {
-            if (logEntries == null)
-            {
-                return;
-            }
-
-            foreach (var log in logEntries)
-            {
-                _logs.Add(new LogItem(log));
-                // _collectionView.AddNewItem(new LogItem(log));
-            }
-
-            RaisePropertyChanged(nameof(LogEntryList));
-        }
-
-        private bool descendingOrder;
-
-        /// <summary>
-        /// Replace the current log entries with the new set.
-        /// </summary>
-        /// <param name="logEntries">The log entries list.</param>
-        /// <param name="descending">True: Descending order by TimeStamp, False: Ascending order by TimeStamp </param>
-        public void SetLogs(IList<LogEntry> logEntries, bool descending)
-        {
-            descendingOrder = descending;
-            _logs.Clear();
-            _collectionView = new ListCollectionView(new List<LogItem>());
-
-            if (logEntries == null)
-            {
-                RaisePropertyChanged(nameof(LogEntryList));
-                return;
-            }
-
-            AddLogs(logEntries);
-        }
-
-        public ListCollectionView LogEntryList
-        {
-            get
-            {
-                lock (_collectionViewLock)
-                {
-                    var sorted = descendingOrder ? _logs.OrderByDescending(x => x.Time) : _logs.OrderBy(x => x.Time);
-                    var sorted_collection = new ObservableCollection<LogItem>(sorted);                    
-                    _collectionView = new ListCollectionView(sorted_collection);
-                    _collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
-                    return _collectionView;
-                }
-            }
-        }
-
-        public string MessageFilter
-        {
-            get
-            {
-                return _filter; 
-            }
-
-            set
-            {
-                _filter = value;
-                Debug.WriteLine($"MessageFilter is called {_filter}");
-                if (_collectionView == null)
-                {
-                    Debug.WriteLine($"set MessageFilter, _collectionView is still null");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(_filter))
-                {
-                    _collectionView.Filter = null;
-                    return;
-                }
-
-                lock (_collectionViewLock)
-                {
-                    var splits = _filter.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    _collectionView.Filter = new Predicate<object>(item => {
-                        foreach (var subFilter in splits)
-                        {
-                            if (((LogItem)item).Message.Contains(subFilter))
-                            {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    });
-
-                    // TODO: Add filter changed event handler
-                    // So that LogsViewerViewModel can disable the next page button.
-                    MessageFilterChanged?.Invoke(this, new EventArgs());
-                }
-            }
-        }
-
-        internal LogItem SelectedEntry(int index)
-        {
-            if (_logs == null)
-            {
-                return null;
-            }
-
-            if (index < 0 || index >= _logs.Count)
-            {
-                return null;
-            }
-
-            return _logs.ElementAt<LogItem>(index);
-        }
-    }
-
     /// <summary>
     /// The view model for LogsViewerToolWindow.
     /// </summary>
-    public class LogsViewerViewModel : ViewModelBase
+    public partial class LogsViewerViewModel : ViewModelBase
     {
         //private const string GoogleCloudLogoPath = "Theming/Resources/GCP_logo_horizontal.png";
         //private static readonly Lazy<ImageSource> s_logo = 
@@ -388,9 +256,6 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private ProtectedCommand _cancelLoadingCommand;
         private ProtectedCommand _toggleExpandAllCommand;
         private DataGridRowDetailsVisibilityMode _expandAll = DataGridRowDetailsVisibilityMode.Collapsed;
-
-        public LogEntriesViewModel LogEntriesViewModel { get; private set; }
-        public LogsFilterViewModel FilterViewModel { get; private set; }
 
         private bool _canCallNextPage = false;
         public ICommand CancelLoadingCommand => _cancelLoadingCommand;
@@ -439,8 +304,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
         private string _selectedDate = string.Empty;
-
-        public void SetSelectedChanged(object item)
+        public void OnFirstRowChanged(object item)
         {
             var log = item as LogItem;
             if ( log == null)
@@ -448,9 +312,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 return;
             }
 
-            SelectedDate = log.Date;
+            FirstRowDate = log.Date;
         }
-        public string SelectedDate
+        public string FirstRowDate
         {
             get
             {
@@ -461,6 +325,167 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 if (value != _selectedDate)
                 {
                     SetValueAndRaise(ref _selectedDate, value);
+                }
+            }
+        }
+
+        public IEnumerable<TimeZoneInfo> SystemTimeZones => TimeZoneInfo.GetSystemTimeZones();
+        private TimeZoneInfo _selectedTimeZone = TimeZoneInfo.Local;
+        public TimeZoneInfo SelectedTimeZone
+        {
+            get { return _selectedTimeZone; }
+            set {
+                if (value != _selectedTimeZone)
+                {
+                    OnTimezoneChange();
+                    SetValueAndRaise(ref _selectedTimeZone, value);
+                }
+            }
+        }
+
+
+        private ObservableCollection<LogItem> _logs = new ObservableCollection<LogItem>();
+        ListCollectionView _collectionView;
+        private Object _collectionViewLock = new Object();
+        private string _filter;
+
+        private const string ShuffleIconPath = "StackdriverLogsViewer/Resources/shuffle.png";
+        private static readonly Lazy<ImageSource> s_shuffle_icon =
+            new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ShuffleIconPath));
+        public ImageSource ShuffleImage => s_shuffle_icon.Value;
+
+        public event EventHandler MessageFilterChanged;
+
+        private void OnTimezoneChange()
+        {
+            if (_logs != null)
+            {
+                // TODO:  lock on _logs?
+                foreach (var log in _logs)
+                {
+                    log.ChangeTimeZone(_selectedTimeZone);
+                }
+            }
+
+            DateTimePickerViewModel.ChangeTimeZone(_selectedTimeZone);
+            _collectionView.Refresh();
+        }
+
+
+        /// <summary>
+        /// Append a set of log entries.
+        /// </summary>
+        public void AddLogs(IList<LogEntry> logEntries)
+        {
+            if (logEntries == null)
+            {
+                return;
+            }
+
+            foreach (var log in logEntries)
+            {
+                _logs.Add(new LogItem(log, _selectedTimeZone));
+                // _collectionView.AddNewItem(new LogItem(log));
+            }
+
+            RaisePropertyChanged(nameof(LogEntryList));
+        }
+
+        private bool descendingOrder;
+
+        /// <summary>
+        /// Replace the current log entries with the new set.
+        /// </summary>
+        /// <param name="logEntries">The log entries list.</param>
+        /// <param name="descending">True: Descending order by TimeStamp, False: Ascending order by TimeStamp </param>
+        public void SetLogs(IList<LogEntry> logEntries, bool descending)
+        {
+            descendingOrder = descending;
+            _logs.Clear();
+            _collectionView = new ListCollectionView(new List<LogItem>());
+
+            if (logEntries == null)
+            {
+                RaisePropertyChanged(nameof(LogEntryList));
+                return;
+            }
+
+            AddLogs(logEntries);
+        }
+
+        public ListCollectionView LogEntryList
+        {
+            get
+            {
+                lock (_collectionViewLock)
+                {
+                    var sorted = descendingOrder ? _logs.OrderByDescending(x => x.Time) : _logs.OrderBy(x => x.Time);
+                    var sorted_collection = new ObservableCollection<LogItem>(sorted);
+                    _collectionView = new ListCollectionView(sorted_collection);
+                    _collectionView.GroupDescriptions.Add(new PropertyGroupDescription("Date"));
+                    return _collectionView;
+                }
+            }
+        }
+
+        private ProtectedCommand _simpleTextSearchCommand;
+        public ICommand SimpleTextFilterCommand => _simpleTextSearchCommand;
+
+        private void OnSimpleTextSearchClicked()
+        {
+            if (string.IsNullOrWhiteSpace(_filter))
+            {
+                return;
+            }
+
+            // Currently a hack. This means MessageFilter changed
+            if (!_canCallNextPage)
+            {
+                Reload();
+            }
+        }
+
+        public string MessageFilter
+        {
+            get
+            {
+                return _filter;
+            }
+
+            set
+            {
+                _filter = value;
+                Debug.WriteLine($"MessageFilter is called {_filter}");
+                if (_collectionView == null)
+                {
+                    Debug.WriteLine($"set MessageFilter, _collectionView is still null");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(_filter))
+                {
+                    _collectionView.Filter = null;
+                    return;
+                }
+
+                lock (_collectionViewLock)
+                {
+                    var splits = _filter.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    _collectionView.Filter = new Predicate<object>(item => {
+                        foreach (var subFilter in splits)
+                        {
+                            if (((LogItem)item).Message.Contains(subFilter))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    });
+
+                    // TODO: Add filter changed event handler
+                    // So that LogsViewerViewModel can disable the next page button.
+                    MessageFilterChanged?.Invoke(this, new EventArgs());
                 }
             }
         }
@@ -481,10 +506,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             _dataSource = new Lazy<LoggingDataSource>(CreateDataSource);
             
-            LogEntriesViewModel = new LogEntriesViewModel();
-            LogEntriesViewModel.MessageFilterChanged += (sender, e) => _canCallNextPage = false;
-            FilterViewModel = new LogsFilterViewModel();
-            FilterViewModel.FilterChanged += (sender, e) => Reload();
+            MessageFilterChanged += (sender, e) => _canCallNextPage = false;
+            InitFilters();
+            FilterChanged += (sender, e) => Reload();
+            _simpleTextSearchCommand = new ProtectedCommand(OnSimpleTextSearchClicked, canExecuteCommand: true);
         }
 
         public async void LoadOnStartup()
@@ -497,8 +522,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 return;
             }
 
-            FilterViewModel.ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
-            if (FilterViewModel.SelectedResource != null)
+            ResourceDescriptors = await _dataSource.Value.GetResourceDescriptorsAsync();
+            if (SelectedResource != null)
             {
                 // Reload();
                 FilterOutResource();
@@ -620,7 +645,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private async void FilterOutResource()
         {
             List<MonitoredResourceDescriptor> resources = new List<MonitoredResourceDescriptor>();
-            foreach (var resourceType in FilterViewModel.ResourceDescriptors)
+            foreach (var resourceType in ResourceDescriptors)
             {
                 if (await ShouldKeepResourceType(resourceType))
                 {
@@ -628,7 +653,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
             }
 
-            FilterViewModel.ResourceDescriptors = resources;
+            ResourceDescriptors = resources;
         }
 
         private object _isLoadingLockObj = new object();
@@ -652,7 +677,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             try
             {
                 _canCallNextPage = false;
-                FilterViewModel.RefreshCommand.CanExecuteCommand = false;
+                RefreshCommand.CanExecuteCommand = false;
                 //// TODO: using ... animation or adding it to Resources.
                 //LogLoddingProgress = "Loading ... ";
 
@@ -679,14 +704,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 // Because at the time "Cancelled", a scroll down to the bottom event is raised and triggers
                 // another automatic NextPage call.
                 _canCallNextPage = (!_cancelled && !string.IsNullOrWhiteSpace(_nextPageToken));
-                FilterViewModel.RefreshCommand.CanExecuteCommand = true;
+                RefreshCommand.CanExecuteCommand = true;
             }
         }
 
 
         private string CurrentFilter()
         {
-            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+            var finalFilter = $"{Filter} {MessageFilter}";
             return string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
         }
 
@@ -733,9 +758,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             _cancelled = false;
             //var reqParams = CurrentRequestParameters();
 
-            var finalFilter = $"{FilterViewModel.Filter} {LogEntriesViewModel.MessageFilter}";
+            var finalFilter = $"{Filter} {MessageFilter}";
             string filter = string.IsNullOrWhiteSpace(finalFilter) ? null : finalFilter;
-            var order = FilterViewModel.DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
+            var order = DateTimePickerViewModel.IsDecendingOrder ? "timestamp desc" : "timestamp asc";
 
             while (count < _defaultPageSize && !_cancelled)
             {
@@ -748,13 +773,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 {
                     firstPage = false;
                     _nextPageToken = null;
-                    LogEntriesViewModel.SetLogs(null, FilterViewModel.DateTimePickerViewModel.IsDecendingOrder);
-                    SetSelectedChanged(0);
+                    SetLogs(null, DateTimePickerViewModel.IsDecendingOrder);
                 }
 
                 var results = await _dataSource.Value.ListLogEntriesAsync(filter, order, _defaultPageSize, _nextPageToken);
-                LogEntriesViewModel.AddLogs(results?.LogEntries);
-                FilterViewModel.UpdateFilterWithLogEntries(results?.LogEntries);
+                AddLogs(results?.LogEntries);
+                UpdateFilterWithLogEntries(results?.LogEntries);
                 _nextPageToken = results.NextPageToken;
                 if (results?.LogEntries != null)
                 {
@@ -770,7 +794,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
             if (count == 0 && !_cancelled)
             {
-                FilterViewModel.TryToRemoveEmptyLogName();
+                TryToRemoveEmptyLogName();
             }
         }
 

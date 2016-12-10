@@ -234,7 +234,7 @@
     <Compile Include="StackdriverLogsViewer\LogsFilterViewModel.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindow.cs" />
     <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowCommand.cs" />
-    <Compile Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml.cs">
+    <Compile Include="MySQLInstaller\LogsViewerToolWindowControl.xaml.cs">
       <DependentUpon>LogsViewerToolWindowControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="StackdriverLogsViewer\LogDetailViewModel.cs" />
@@ -665,7 +665,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="StackdriverLogsViewer\LogsViewerToolWindowControl.xaml">
+    <Page Include="MySQLInstaller\LogsViewerToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

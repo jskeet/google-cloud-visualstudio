@@ -64,7 +64,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             set
             {
                 DataContext = value;
-                txtMessage.DataContext = value.LogEntriesViewModel;
+                SimpleTextSearchPanel.DataContext = value;
             }
         }
 
@@ -366,7 +366,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                     //var preSelectedRow = SelectedRow();
                     object item = dg.Items[rowIndex];
-                    ViewModel.SetSelectedChanged(item);
+                    //ViewModel.OnFirstRowChanged(item);
                     dg.SelectedItem = item;
                     //preSelectedRow?.InvalidateVisual();
 
@@ -376,9 +376,72 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
         }
 
+        public static T FindVisualChild<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                    if (child != null && child is T)
+                    {
+                        return (T)child;
+                    }
+
+                    T childItem = FindVisualChild<T>(child);
+                    if (childItem != null) return childItem;
+                }
+            }
+            return null;
+        }
+
+        private DataGridRow FindDataGridRowByPoint(Point p)
+        {
+            var ele = dg.InputHitTest(p);
+            DependencyObject dep = (DependencyObject)ele;
+            // navigate further up the tree
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep == null)
+            {
+                return null;
+            }
+
+            DataGridRow row = dep as DataGridRow;
+            return row;
+        }
+
+        private object GetFirstRow()
+        {
+            var row = FindDataGridRowByPoint(new Point(5, 50));
+            Debug.WriteLine($"FindRowByPoint(5, 50) returns {row}");
+            if (null == row)
+            {
+                return null;
+            }
+
+            int itemIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
+            if (itemIndex < 0)
+            {
+                Debug.WriteLine($"Find first IndexFromContainer returns {itemIndex} ");
+                return null;
+            }
+            else
+            {
+                var item = dg.Items[itemIndex];
+                Debug.WriteLine($"Find first row returns object {item.ToString()}");
+                return item;
+            }
+        }
+
         // TODO: If the loading is cancelled in the middle, it is no longer scrollable.
         private void dtGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            ViewModel?.OnFirstRowChanged(GetFirstRow());
+
             var grid = sender as DataGrid;            
 
             //Debug.WriteLine($"dtGrid_ScrollChanged, sender is {grid.Name}");
@@ -399,6 +462,21 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 Debug.WriteLine("Now it is at bottom");
                 ViewModel?.LoadNextPage();
             }
+
+
+            //var row = FindVisualChild<DataGridRow>(sv);       
+            //if (row == null)
+            //{
+            //    Debug.WriteLine("FindVisualChild returns null");
+            //    return;
+            //}
+            //else
+            //{
+            //    int rowIndex = dg.ItemContainerGenerator.IndexFromContainer(row);
+            //    object item = dg.Items[rowIndex];
+            //    ViewModel.SetSelectedChanged(item);
+            //}
+
         }
 
         ////#region JsonView

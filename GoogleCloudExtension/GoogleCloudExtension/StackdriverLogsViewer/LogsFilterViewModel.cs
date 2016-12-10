@@ -95,7 +95,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
     ////    }
     ////}
 
-    public class LogsFilterViewModel : ViewModelBase
+    public partial class LogsViewerViewModel : ViewModelBase
     {
         //private const string ToggleButtonImagePath = "StackdriverLogsViewer/Resources/ToggleButton.bmp";
 
@@ -114,7 +114,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         public ImageSource SearchIcon => s_search_icon.Value;
 
 
-        public LogsFilterViewModel()
+        public void InitFilters()
         {
             //_dateTimeRangeCommand = new ProtectedCommand(() =>
             //{
@@ -124,7 +124,12 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             //_startDateTime = DateTimeRangePicker.Start;
             //_endDateTime = DateTimeRangePicker.End;
 
-            DateTimePickerViewModel = new LogDateTimePickerViewModel();
+            DateTimePickerViewModel = new LogDateTimePickerViewModel(_selectedTimeZone)
+            {
+                IsDecendingOrder = true,
+                FilterDateTimeUtc = DateTime.UtcNow             
+            };
+
             DateTimePickerViewModel.DateTimeFilterChange += (sender, e) => {
                 NotifyFilterChanged();
             };
@@ -140,6 +145,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
 
+
         #region Refresh Button
         private ProtectedCommand _refreshCommand;
         public ProtectedCommand RefreshCommand => _refreshCommand;
@@ -148,7 +154,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private void OnRefreshCommand()
         {
             DateTimePickerViewModel.IsDecendingOrder = true;
-            DateTimePickerViewModel.FilterDateTime = DateTime.MaxValue;
+            DateTimePickerViewModel.FilterDateTimeUtc = DateTime.UtcNow;
             NotifyFilterChanged();
         }
 
@@ -163,11 +169,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             // This is required to keep the filter same.
             if (_showBasicFilter)
             {
-                _filter = BasicFilter;
+                _simpleFilter= BasicFilter;
             }
             else
             {
-                _filter = AdvancedFilter;
+                _simpleFilter= AdvancedFilter;
             }
 
             Debug.WriteLine("NotifyFilterChanged");
@@ -178,11 +184,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return _filter;
+                return _simpleFilter;
             }
         }
 
-        private string _filter;
+        private string _simpleFilter;
         private string BasicFilter
         {
             get
@@ -206,14 +212,14 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
                 if (DateTimePickerViewModel.IsDecendingOrder)
                 {
-                    if (DateTimePickerViewModel.FilterDateTime < DateTime.Now)
+                    if (DateTimePickerViewModel.FilterDateTimeUtc < DateTime.UtcNow)
                     {
-                        filter.AppendLine($"timestamp<=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
+                        filter.AppendLine($"timestamp<=\"{DateTimePickerViewModel.FilterDateTimeUtc.ToString("O")}\"");
                     }
                 }
                 else
                 {
-                    filter.AppendLine($"timestamp>=\"{DateTimePickerViewModel.FilterDateTime.ToString("O")}\"");
+                    filter.AppendLine($"timestamp>=\"{DateTimePickerViewModel.FilterDateTimeUtc.ToString("O")}\"");
                 }
 
                 //if (_startDateTime > DateTime.MinValue)
@@ -398,10 +404,10 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             public const string _logNameNotListed = "Not On The List";
             public const string _allLogIdsText = "All Logs";
             public const string _emptySelection = "Select ... ";
-            private string _filter;
+            private string _simpleFilter;
             public bool _donotShowNotInTheList = false;
 
-            public string Filter => _filter;
+            public string Filter => _simpleFilter;
 
             ///// <summary>
             ///// When there is no 
@@ -507,7 +513,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                     }
                 }
 
-                _filter = filter.ToString();
+                _simpleFilter= filter.ToString();
             }
         }
 
@@ -668,7 +674,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         #endregion
 
-        public LogDateTimePickerViewModel DateTimePickerViewModel { get; }
+        public LogDateTimePickerViewModel DateTimePickerViewModel { get; private set; }
 
         #region Advanced Filter
         private bool _showBasicFilter = true;

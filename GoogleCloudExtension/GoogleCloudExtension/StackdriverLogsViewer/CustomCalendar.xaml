@@ -5,19 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LogView"
              xmlns:time="clr-namespace:GoogleCloudExtension.Controls"
-             mc:Ignorable="d" Width="328" Height="458">
+             mc:Ignorable="d" Width="275" Height="458">
     <UserControl.Resources>
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Theming/CommonResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="StyleCalanderDayButton" TargetType="{x:Type CalendarDayButton}">
+            <!--<Style x:Key="StyleCalanderDayButton" TargetType="{x:Type CalendarDayButton}">
 
-                <Setter Property="Height" Value="40"></Setter>
+                <Setter Property="Height" Value="32"></Setter>
 
-                <Setter Property="Width" Value="40"></Setter>
-                <Setter Property="FontSize" Value="16" />
+                <Setter Property="Width" Value="32"></Setter>
+                <Setter Property="FontSize" Value="12" />
 
             </Style>
 
@@ -28,8 +28,6 @@
                 <Setter Property="Width" Value="60"></Setter>
 
                 <Setter Property="FontWeight" Value="Normal"/>
-
-
             </Style>
 
             <DataTemplate x:Key="DayTitle"  >
@@ -41,7 +39,8 @@
                        Text="{Binding}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" />
-            </DataTemplate>
+            </DataTemplate>-->
+
 
             <Style x:Key="StyleCalendar" TargetType="{x:Type Calendar}">
 
@@ -73,9 +72,9 @@
 
                 </Setter>
 
-                <Setter Property="CalendarDayButtonStyle"  Value="{StaticResource StyleCalanderDayButton}"></Setter>
+                <!--<Setter Property="CalendarDayButtonStyle"  Value="{StaticResource StyleCalanderDayButton}"></Setter>
 
-                <Setter Property="CalendarButtonStyle"  Value="{StaticResource StyleCalanderButton}"></Setter>
+                <Setter Property="CalendarButtonStyle"  Value="{StaticResource StyleCalanderButton}"></Setter>-->
 
                 <Setter Property="Foreground" Value="#FF333333"/>
                 <Setter Property="IsTodayHighlighted" Value="False" />
@@ -113,29 +112,34 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" 
-                     Margin="12, 12, 12, 6"
-                     >
-            <UniformGrid Rows="1" Columns="2">
-                <TextBlock Text="Date:"  Margin="0, 0, 6, 5"/>
-                <TextBlock Text="Time:" Margin="6, 0, 0, 5" />
-            </UniformGrid>
-            <UniformGrid Rows="1" Columns="2">
-                <TextBox Text="{Binding Path=Date,StringFormat=d}" 
-                     Margin="0, 0, 6, 0" 
-                     IsEnabled="False"
-                     Width="145"
-                     HorizontalAlignment="Left"
-                     VerticalAlignment="Center"
-                     Padding="8, 5, 8, 5"
-                     />
-                <time:TimePicker Margin="6, 0, 0, 0" 
-                             HorizontalAlignment="Left"
-                             VerticalAlignment="Center"        
-                             Width="145"
-                             />
-            </UniformGrid>
-        </StackPanel>
+
+        <Grid Grid.Row="0" Margin="12, 12, 12, 6" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="Date:"  Margin="0, 0, 6, 5"/>
+            <TextBlock Grid.Column="1" Grid.Row="0" Text="Time:" Margin="6, 0, 0, 5" />
+            <TextBox Grid.Column="0" Grid.Row="1"
+                                Text="{Binding Path=Date,StringFormat=d}" 
+                                        Margin="0, 0, 6, 0" 
+                                        IsEnabled="False"
+                                        Width="90"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Padding="8, 5, 8, 5"
+                                        />
+            <time:TimePicker Margin="6, 0, 0, 0" Grid.Column="1" Grid.Row="1" 
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"        
+                                    Width="145"
+                                    />
+        </Grid>
+
         <Calendar Grid.Row="1" 
                   Margin="12, 4, 12, 4"
                   x:Name="calendar" HorizontalAlignment="Center"
@@ -145,7 +149,20 @@
                                             >
         </Calendar>
 
-        <ToggleButton Grid.Row="2"
+        <StackPanel Orientation="Horizontal" Margin="12, 6, 12, 6" HorizontalAlignment="Stretch"
+                    Grid.Row="2"
+                    >
+
+            <TextBlock Text="Get log" Margin="0, 0, 6, 0" VerticalAlignment="Center" />
+            <ComboBox SelectedIndex="0" VerticalAlignment="Center">
+                <ComboBoxItem>after</ComboBoxItem>
+                <ComboBoxItem>before</ComboBoxItem>
+            </ComboBox>
+            <TextBlock Text="this time stamp" Margin="6, 0, 0, 0" VerticalAlignment="Center"/>
+
+        </StackPanel>
+        
+        <!--<ToggleButton Grid.Row="2"
                       Margin="12, 6, 12, 6"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Center"
@@ -181,7 +198,7 @@
                     </Setter>
                 </Style>
             </ToggleButton.Style>
-        </ToggleButton>
+        </ToggleButton>-->
 
         <StackPanel Grid.Row="3" 
                     Margin="12, 6, 0, 12"
@@ -192,7 +209,7 @@
                                         Command="{Binding Path=OKCommand}"
                                         Width="35"
                                         Margin="0, 0, 6, 0"/>
-            <Button Content="Cancel" HorizontalAlignment="Left" Click="Button_Click"
+            <Button Content="Cancel" HorizontalAlignment="Left" 
                                         Style="{StaticResource CommonButtonStandardStyle}"                                                    
                                         />
         </StackPanel>
