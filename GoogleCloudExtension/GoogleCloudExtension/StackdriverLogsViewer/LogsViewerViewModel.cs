@@ -260,7 +260,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         private bool _canCallNextPage = false;
         public ICommand CancelLoadingCommand => _cancelLoadingCommand;
         private Visibility _cancelLoadingVisible = Visibility.Collapsed;
-        public Visibility CancelLoadingVisibility
+        public Visibility CancelLoadingButtonVisibility
         {
             get
             {
@@ -303,7 +303,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
 
         public ICommand ToggleExpandAllCommand => _toggleExpandAllCommand;
 
-        private string _selectedDate = string.Empty;
+        private string _firstRowDate = string.Empty;
         public void OnFirstRowChanged(object item)
         {
             var log = item as LogItem;
@@ -318,13 +318,13 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         {
             get
             {
-                return _selectedDate;
+                return _firstRowDate;
             }
             set
             {
-                if (value != _selectedDate)
+                if (value != _firstRowDate)
                 {
-                    SetValueAndRaise(ref _selectedDate, value);
+                    SetValueAndRaise(ref _firstRowDate, value);
                 }
             }
         }
@@ -500,7 +500,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 Debug.WriteLine("Cancel is called");
                 LogLoddingProgress = "Cancelling . . .";
-                CancelLoadingVisibility = Visibility.Collapsed;
+                CancelLoadingButtonVisibility = Visibility.Collapsed;
                 _cancelled = true;
             });
 
@@ -697,7 +697,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 Console.WriteLine("Setting _isLoading to false");
                 _isLoading = false;
-                CancelLoadingVisibility = Visibility.Collapsed;
+                CancelLoadingButtonVisibility = Visibility.Collapsed;
                 LogLoddingProgress = string.Empty;
                 // Disable fetching next page if cancelled or _nextPageToken is empty
                 // This is critical otherwise cancelling a "fetch" won't work
@@ -766,7 +766,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             {
                 Debug.WriteLine($"LoadLogs, count={count}, firstPage={firstPage}");
 
-                CancelLoadingVisibility = Visibility.Visible;
+                CancelLoadingButtonVisibility = Visibility.Visible;
                 LogLoddingProgress = "Loading . . .";
 
                 if (firstPage)

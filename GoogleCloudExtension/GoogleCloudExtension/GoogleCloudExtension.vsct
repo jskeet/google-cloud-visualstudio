@@ -56,7 +56,7 @@
       <!-- This group contains all of the commands added to the project's context menu. -->
       <Group guid="guidGoogleCloudExtensionPackageCmdSet" id="GcpProjectContextMenu" priority="0x600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE" />
-      </Group>
+      </Group>   
     </Groups>
 
     <Buttons>
@@ -72,6 +72,7 @@
       <Button guid="guidGoogleCloudExtensionPackageCmdSet" id="cmdidLogsViewerToolWindowCommand" priority="0x0550" type="Button">
         <Parent guid="guidGoogleCloudExtensionPackageCmdSet" id="GcpToolsGroup" />
         <CommandFlag>DefaultDisabled</CommandFlag>
+        <Icon guid="guidGoogleCloudExtensionPackageIcon" id="stackdriverLoggingIcon" />
         <Strings>
           <ButtonText>Show Stackdriver Logs Viewer</ButtonText>
         </Strings>
@@ -108,6 +109,12 @@
       </Button>
 
     </Buttons>
+    
+    <!-- Add menu icon images. -->
+    <Bitmaps>
+      <Bitmap guid="guidGoogleCloudExtensionPackageIcon" 
+              href="StackdriverLogsViewer\Resources\logging-menu-icon-16.png" usedList="stackdriverLoggingIcon" />
+    </Bitmaps>   
   </Commands>
 
   <Symbols>
@@ -126,6 +133,10 @@
       <IDSymbol value="4230" name="GcpProjectContextMenu" />
       <IDSymbol value="4231" name="cmdidLogsViewerToolWindowCommand" />
     </GuidSymbol>
-  
+
+    <GuidSymbol name="guidGoogleCloudExtensionPackageIcon" value="{1014A04F-F8DA-48E4-9C20-380AEC85F3F8}">
+      <IDSymbol name="stackdriverLoggingIcon" value="1" />
+    </GuidSymbol>
+    
   </Symbols>
 </CommandTable>

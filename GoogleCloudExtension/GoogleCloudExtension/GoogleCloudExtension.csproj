@@ -300,6 +300,7 @@
     <Compile Include="Utils\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="StackdriverLogsViewer\Resources\logging-menu-icon-16.png" />
     <Resource Include="StackdriverLogsViewer\Resources\logo_cloud.png" />
     <Resource Include="StackdriverLogsViewer\Resources\advanced-filter-help.png" />
     <Resource Include="StackdriverLogsViewer\Resources\logo_cloud_12.png" />

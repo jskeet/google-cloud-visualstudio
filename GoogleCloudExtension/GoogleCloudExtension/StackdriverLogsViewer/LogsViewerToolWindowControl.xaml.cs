@@ -266,15 +266,8 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             var toggleButton = comboBoxTemplate.FindName("toggleButton", comboBox) as ToggleButton;
             var toggleButtonTemplate = toggleButton.Template;
             var border = toggleButtonTemplate.FindName("templateRoot", toggleButton) as Border;
-
-            if (comboBox.Name == "comboTimeZone")
-            {
-                border.Background = new SolidColorBrush(Colors.Transparent);
-            }
-            else
-            {
-                border.Background = new SolidColorBrush(Colors.White);
-            }
+            var backgroud = comboBox.Background;
+            border.Background = backgroud;
         }
 
         private DataGridRow SelectedRow()
@@ -305,6 +298,9 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         /// <summary>
+        /// 
+        /// !!!   12-10-2016   More test shows, seems to me now it is not necessary to set this.
+        /// 
         /// Somehow this is neccessary to change the seleted item
         /// Otherwise the "SelectedItem" become white blank.
         /// </summary>

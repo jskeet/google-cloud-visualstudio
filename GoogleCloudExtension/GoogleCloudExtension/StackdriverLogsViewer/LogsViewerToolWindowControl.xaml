@@ -941,7 +941,7 @@
                     Content="Cancel"
                     Command="{Binding Path=CancelLoadingCommand}"
                     VerticalAlignment="Bottom"
-                    Visibility="{Binding Path=CancelLoadingVisibility}"
+                    Visibility="{Binding Path=CancelLoadingButtonVisibility}"
                     Style="{StaticResource CommonButtonStandardStyle}"                    
                     />
             </StackPanel>
