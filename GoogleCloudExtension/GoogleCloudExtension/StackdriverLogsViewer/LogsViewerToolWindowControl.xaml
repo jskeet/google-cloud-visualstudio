@@ -565,14 +565,14 @@
                              Margin="0, 0, 8, 0"                            
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
-                      IsExpanded="False" 
-                                  ToolTip="Toggle All Log Entries Detail View"
-                                  Expanded="allExpander_Expanded" Collapsed="allExpander_Collapsed"                                 
-                                  >
+                     IsExpanded="{Binding ToggleExapandAllExpanded}"
+                        
+                        ToolTip="{Binding ToggleExapandAllToolTip}" >
+
+
                         <Expander.LayoutTransform >
                             <ScaleTransform ScaleX="1" ScaleY="1"></ScaleTransform>
                         </Expander.LayoutTransform>
-
                     </Expander>
                 </DockPanel>
             </Border>
@@ -581,9 +581,8 @@
                 Panel.ZIndex="10"
              x:Name="dg" 
                    Padding="0,0, 0, 0" IsReadOnly="True"
-                  GridLinesVisibility="None" SelectionChanged="dg_SelectionChanged"
+                  GridLinesVisibility="None" 
                   CanUserResizeRows="False"
-                  RowDetailsVisibilityMode="{Binding Path=ToggleExpandHideAll,Mode=OneWay}"
                   RowStyle="{StaticResource rowStyle}"
                   CellStyle="{StaticResource cellStyle}"
                   AutoGenerateColumns="False"
@@ -596,7 +595,6 @@
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                   PreviewMouseDown="dg_PreviewMouseDown"      
                   AlternationCount="2"
-                  MouseMove="dg_MouseMove"
                   ScrollViewer.ScrollChanged="dtGrid_ScrollChanged"
                   ColumnHeaderHeight="18"
                  >
@@ -604,6 +602,16 @@
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" 
                    Color="Black"/>
                 </DataGrid.Resources>
+                <DataGrid.Style>
+                    <Style TargetType="DataGrid">
+                        <Setter Property="RowDetailsVisibilityMode" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsExpanded, ElementName=allExpander}" Value="True">
+                                <Setter Property="RowDetailsVisibilityMode" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Style>
                 <!--  AlternatingRowBackground="AliceBlue" -->
                 <!--<DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="DarkGray"/>

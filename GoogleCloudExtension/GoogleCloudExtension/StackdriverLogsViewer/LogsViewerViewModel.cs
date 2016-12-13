@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -201,7 +202,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
             }
             else
             {
-                if (!DateTime.TryParse(timestamp.ToString(), out _timestamp))
+                // From Stackdriver Logging API reference,
+                // A timestamp in RFC3339 UTC "Zulu" format, accurate to nanoseconds. 
+                // Example: "2014-10-02T15:01:23.045123456Z".
+                if (!DateTime.TryParse(timestamp.ToString(),
+                    CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out _timestamp))
                 {
                     Debug.Assert(false, "Failed to parse Entry Timestamp");
                     _timestamp = DateTime.MaxValue;
@@ -288,7 +293,7 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
         }
 
         private Visibility _loadingBlockVisibility = Visibility.Collapsed;
-        public Visibility LoadingBlockVisibility
+        public Visibility CancelLoadingVisibility
         {
             get
             {
@@ -328,6 +333,28 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 }
             }
         }
+
+        private bool _toggleExpandAllExpanded = false;
+
+        /// <summary>
+        /// Route the expander IsExpanded state to control expand all or collapse all.
+        /// </summary>
+        public bool ToggleExapandAllExpanded
+        {
+            get { return _toggleExpandAllExpanded; }
+            set
+            {
+                SetValueAndRaise(ref _toggleExpandAllExpanded, value);
+                RaisePropertyChanged(nameof(ToggleExapandAllToolTip));
+            }
+        }
+
+        /// <summary>
+        /// Gets the tool tip for Toggle Expand All button.
+        /// </summary>
+        public string ToggleExapandAllToolTip => _toggleExpandAllExpanded ?
+            "Click to collapse all log details." : "Click to see all log details.";
+
 
         public IEnumerable<TimeZoneInfo> SystemTimeZones => TimeZoneInfo.GetSystemTimeZones();
         private TimeZoneInfo _selectedTimeZone = TimeZoneInfo.Local;
@@ -610,11 +637,11 @@ namespace GoogleCloudExtension.StackdriverLogsViewer
                 SetValueAndRaise(ref _loadingProgress, value);
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    LoadingBlockVisibility = Visibility.Collapsed;
+                    CancelLoadingVisibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    LoadingBlockVisibility = Visibility.Visible;
+                    CancelLoadingVisibility = Visibility.Visible;
                 }
             }
         }
